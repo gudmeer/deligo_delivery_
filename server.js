@@ -8,6 +8,8 @@ const socketIo = require('socket.io');
 const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
+console.log('DB_PASS cargado:', process.env.DB_PASS);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
