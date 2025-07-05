@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Administrar Usuarios</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: .4rem; text-align: center; }
+    th { background:#f5f5f5; }
+    select, button { padding: 3px; }
+  </style>
+</head>
+<body>
+  <header><h1>Gestión de Usuarios</h1></header>
+
+  <main>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-usuarios"></tbody>
+    </table>
+  </main>
+
+  <script>
+    const tabla = document.getElementById('tabla-usuarios');
+    const token = localStorage.getItem('token');
+
+    async function cargarUsuarios() {
+      try {
+        const res = await fetch('http://localhost:5000/api/usuarios', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const usuarios = await res.json();
+
+        tabla.innerHTML = usuarios.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td>${u.nombre}</td>
+            <td>${u.correo}</td>
+            <td>
+              <select onchange="cambiarRol(${u.id}, this.value)">
+                <option value="cliente" ${u.rol === 'cliente' ? 'selected' : ''}>Cliente</option>
+                <option value="negocio" ${u.rol === 'negocio' ? 'selected' : ''}>Negocio</option>
+                <option value="repartidor" ${u.rol === 'repartidor' ? 'selected' : ''}>Repartidor</option>
+                <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </td>
+            <td>${u.estado ?? 'activo'}</td>
+            <td>
+              <button onclick="toggleEstado(${u.id})">Activar/Desactivar</button>
+              <button onclick="eliminarUsuario(${u.id})">Eliminar</button>
+            </td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        console.error('Error al cargar usuarios:', err);
+        tabla.innerHTML = '<tr><td colspan="6">Error al cargar usuarios</td></tr>';
+      }
+    }
+
+    async function cambiarRol(id, nuevoRol) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/usuarios/${id}/rol`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ rol: nuevoRol })
+        });
+        const data = await res.json();
+        alert(data.mensaje || 'Rol actualizado');
+        cargarUsuarios();
+      } catch (err) {
+        console.error(err);
+        alert('Error al cambiar rol');
+      }
+    }
+
+    async function toggleEstado(id) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/usuarios/${id}/estado`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        alert(data.mensaje || 'Estado actualizado');
+        cargarUsuarios();
+      } catch (err) {
+        console.error(err);
+        alert('Error al cambiar estado');
+      }
+    }
+
+    async function eliminarUsuario(id) {
+      if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
+      try {
+        const res = await fetch(`http://localhost:5000/api/usuarios/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        alert(data.mensaje || 'Usuario eliminado');
+        cargarUsuarios();
+      } catch (err) {
+        console.error(err);
+        alert('Error al eliminar usuario');
+      }
+    }
+
+    cargarUsuarios();
+  </script>
+</body>
+</html>

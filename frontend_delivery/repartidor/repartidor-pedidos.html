@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io('http://localhost:5000');
+
+  socket.on('connect', () => {
+    console.log('Conectado a Socket.io');
+  });
+
+  socket.on('pedido_actualizado', (pedido) => {
+    console.log('Pedido actualizado:', pedido);
+    cargarPedidosRepartidor(); // Recarga tabla si hay cambios
+  });
+</script>
+
+  <meta charset="UTF-8" />
+  <title>Mis Pedidos Asignados</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: .4rem; text-align: center; }
+    th { background:#f5f5f5; }
+    button { padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <header><h1>Mis Pedidos Asignados</h1></header>
+
+<main>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Dirección</th>
+        <th>Estado</th>
+        <th>Productos</th>
+        <th>Total (S/)</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-pedidos-repartidor"></tbody>
+  </table>
+</main>
+
+<script>
+  const tabla = document.getElementById('tabla-pedidos-repartidor');
+
+  async function cargarPedidosRepartidor() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      tabla.innerHTML = '<tr><td colspan="7">Debes iniciar sesión como repartidor</td></tr>';
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:5000/api/pedidos/repartidor', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Error al cargar pedidos');
+
+      const pedidos = await res.json();
+      if (!Array.isArray(pedidos) || pedidos.length === 0) {
+        tabla.innerHTML = '<tr><td colspan="7">No tienes pedidos asignados</td></tr>';
+        return;
+      }
+
+      tabla.innerHTML = pedidos.map(p => {
+        // Mostrar productos con cantidad y precio
+        const productos = p.detallePedidos?.map(d =>
+          `${d.producto?.nombre} x${d.cantidad} (S/ ${Number(d.producto?.precio).toFixed(2)})`
+        ).join('<br>') || '-';
+
+        // Calcular total del pedido sumando subtotales
+        const total = p.detallePedidos?.reduce((sum, d) =>
+          sum + (Number(d.producto?.precio) * d.cantidad), 0
+        ) || 0;
+
+         // Deshabilitar botones si el estado es "Entregado"
+         const estado = p.estado?.nombre ?? '-';
+         const deshabilitado = estado.toLowerCase() === 'entregado' ? 'disabled' : '';
+
+         return `
+         <tr>
+          <td>${p.id}</td>
+          <td>${p.nombre_cliente ?? '-'}</td>
+          <td>${p.direccion_entrega ?? '-'}</td>
+          <td>${estado}</td>
+          <td>${productos}</td>
+          <td>S/ ${total.toFixed(2)}</td>
+          <td>
+            <button onclick="marcarEnCamino(${p.id})" ${deshabilitado}>En Camino</button>
+            <button onclick="marcarEntregado(${p.id})" ${deshabilitado}>Entregado</button>
+          </td>
+        </tr>
+        `;
+      }).join('');
+
+    } catch (err) {
+      console.error(err);
+      tabla.innerHTML = '<tr><td colspan="7">Error al cargar pedidos</td></tr>';
+    }
+  }
+
+  async function marcarEnCamino(pedidoId) {
+    await actualizarEstadoPedido(pedidoId, 'en-camino');
+  }
+
+  async function marcarEntregado(pedidoId) {
+    await actualizarEstadoPedido(pedidoId, 'entregar');
+  }
+
+  async function actualizarEstadoPedido(pedidoId, accion) {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/${accion}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const result = await res.json();
+      alert(result.mensaje || 'Estado actualizado');
+      cargarPedidosRepartidor();
+
+    } catch (err) {
+      console.error(err);
+      alert('Error al actualizar estado');
+    }
+  }
+
+  cargarPedidosRepartidor();
+  setInterval(cargarPedidosRepartidor, 30000);
+</script>
+</body>
+</html>

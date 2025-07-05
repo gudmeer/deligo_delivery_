@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalles del Pedido</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/font-awesome/css/font-awesome.css">
+  <style>
+    body{background:#f8f9fa;font-family:"Segoe UI",sans-serif;margin:0}
+    .container{max-width:960px;margin:30px auto;padding:20px}
+    .text-center{text-align:center}
+
+    .estado-pedido{
+      background:#fff;padding:25px;border-radius:12px;
+      box-shadow:0 2px 12px rgba(0,0,0,.07);margin-top:20px
+    }
+    .estado-pedido strong{font-size:1.2rem;color:#2c3e50}
+    .estado{font-weight:700;margin:8px 0 15px;padding:8px 12px;
+      border-radius:6px;background:#ecf0f1;color:#34495e;display:inline-block}
+
+    .detalle-pedido h4{margin:30px 0 10px;color:#333}
+    .detalle-pedido table{width:100%;border-collapse:collapse;font-size:.95rem}
+    .detalle-pedido th,.detalle-pedido td{border:1px solid #ddd;padding:10px;text-align:center}
+    .detalle-pedido th{background:#f2f2f2}
+
+    .btn-danger{
+      background:#e74c3c;color:#fff;border:none;padding:10px 18px;
+      border-radius:6px;font-size:.95rem;margin-top:15px;cursor:pointer
+    }
+    .btn-danger:hover{background:#c0392b}
+
+    .detalle-cliente p{margin:8px 0;color:#555}
+    .detalle-cliente strong{color:#2c3e50}
+
+    #lista-historial div{
+      margin-bottom:20px;padding:15px;border:1px solid #ddd;border-radius:8px;background:#fff
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header"></div>
+
+  <main class="container">
+    <h2 class="text-center">🧾 Detalles de tu Pedido</h2>
+    <div id="estado-pedido"></div>
+
+    <div class="estado-pedido">
+      <h3 class="text-center">📜 Historial de Pedidos</h3>
+      <div id="lista-historial"></div>
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="js/custom.js"></script>
+
+  <script>
+    /* ---------- Cargar header y footer ---------- */
+    fetch('header.html').then(r=>r.text()).then(html=>{document.getElementById('header').innerHTML=html});
+    fetch('footer.html').then(r=>r.text()).then(html=>{document.getElementById('footer').innerHTML=html});
+
+    /* ---------- Mostrar pedido por ID ---------- */
+    async function mostrarPedido(){
+      const params   = new URLSearchParams(location.search);
+      const pedidoId = params.get('pedidoId') || localStorage.getItem('ultimo_pedido_id');
+      const token    = localStorage.getItem('token');
+
+      if(!pedidoId || !token){
+        document.getElementById('estado-pedido').innerHTML='<p>❌ Pedido no válido o sesión expirada.</p>';
+        return;
+      }
+
+      try{
+        const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}`,{
+          headers:{Authorization:'Bearer '+token}
+        });
+
+        if(!res.ok){
+          const err = await res.json();
+          document.getElementById('estado-pedido').innerHTML=`<p>❌ ${err.mensaje||'Error al obtener pedido.'}</p>`;
+          return;
+        }
+
+        const pedido = await res.json();
+        console.log('Pedido recibido:',pedido);
+
+        if(!pedido.detallePedidos?.length){
+          document.getElementById('estado-pedido').innerHTML='<p>⚠️ El pedido no tiene productos.</p>';
+          return;
+        }
+
+        const estado = pedido.estado?.nombre?.toLowerCase() || 'desconocido';
+
+        const filas = pedido.detallePedidos.map((d,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td>${d.producto?.nombre||'—'}</td>
+            <td>${d.cantidad}</td>
+            <td>S/ ${d.precio_unitario.toFixed(2)}</td>
+            <td>S/ ${d.subtotal.toFixed(2)}</td>
+          </tr>`).join('');
+
+        const total = pedido.detallePedidos.reduce((s,d)=>s+d.subtotal,0);
+
+        const btnAnular = ['pendiente','aceptado'].includes(estado)
+          ? `<button class="btn-danger" onclick="anularPedido(${pedido.id})">Anular Pedido</button>`
+          : '';
+
+        document.getElementById('estado-pedido').innerHTML=`
+          <div class="estado-pedido">
+            <strong>Pedido #${pedido.id}</strong>
+            <div class="estado">${estado.toUpperCase()}</div>
+            ${btnAnular}
+            <div class="detalle-pedido">
+              <h4>📦 Productos</h4>
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th></tr>
+                </thead>
+                <tbody>${filas}</tbody>
+                <tfoot><tr><th colspan="4">Total</th><th>S/ ${total.toFixed(2)}</th></tr></tfoot>
+              </table>
+
+              <div class="detalle-cliente">
+                <h4>👤 Datos del Cliente</h4>
+                <p><strong>Nombre:</strong> ${pedido.nombre_cliente}</p>
+                <p><strong>Teléfono:</strong> ${pedido.telefono_cliente}</p>
+                <p><strong>Correo:</strong> ${pedido.correo_cliente}</p>
+                <p><strong>Dirección:</strong> ${pedido.direccion_entrega}</p>
+              </div>
+            </div>
+          </div>`;
+      }catch(err){
+        console.error(err);
+        document.getElementById('estado-pedido').innerHTML='<p>❌ Error inesperado al cargar el pedido.</p>';
+      }
+    }
+
+    /* ---------- Historial del cliente ---------- */
+    async function mostrarHistorialPedidos(){
+      const token = localStorage.getItem('token');
+      if(!token) return;
+
+      try{
+        const res = await fetch('http://localhost:5000/api/pedidos/cliente/historial',{
+          headers:{Authorization:'Bearer '+token}
+        });
+
+        if(!res.ok){
+          document.getElementById('lista-historial').innerHTML='<p>No se pudo cargar el historial.</p>';
+          return;
+        }
+
+        const pedidos = await res.json();
+        if(!pedidos.length){
+          document.getElementById('lista-historial').innerHTML='<p>No has realizado pedidos aún.</p>';
+          return;
+        }
+
+        const cards = pedidos.map(p=>{
+          const total  = p.detallePedidos.reduce((s,d)=>s+d.subtotal,0).toFixed(2);
+          const estado = p.estado?.nombre || '—';
+          return `
+            <div>
+              <strong>Pedido #${p.id}</strong> – <b>${estado.toUpperCase()}</b><br>
+              Productos: ${p.detallePedidos.length} – Total: <strong>S/ ${total}</strong><br>
+              <a href="order.html?pedidoId=${p.id}">📄 Ver detalles</a>
+            </div>`;
+        }).join('');
+
+        document.getElementById('lista-historial').innerHTML = cards;
+      }catch(err){
+        console.error(err);
+        document.getElementById('lista-historial').innerHTML='<p>Error al cargar historial.</p>';
+      }
+    }
+
+    /* ---------- Anular pedido ---------- */
+    async function anularPedido(id){
+      if(!confirm('¿Seguro que deseas anular tu pedido?')) return;
+      const token = localStorage.getItem('token');
+      try{
+        const res = await fetch(`http://localhost:5000/api/pedidos/${id}/anular`,{
+          method:'PUT',headers:{Authorization:'Bearer '+token}
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.mensaje||'Error al anular');
+        alert('✅ Pedido anulado');
+        mostrarPedido(); mostrarHistorialPedidos();
+      }catch(err){alert(err.message||'Error');}
+    }
+
+    /* ---------- Iniciar ---------- */
+    mostrarPedido();
+    mostrarHistorialPedidos();
+  </script>
+</body>
+</html>

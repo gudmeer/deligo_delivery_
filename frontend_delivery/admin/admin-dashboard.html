@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Admin</title>
+  <link rel="stylesheet" href="../css/panel.css">
+  <style>
+    nav a {
+      margin-right: 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    header {
+      position: relative;
+    }
+
+    .cerrar-sesion {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .cerrar-sesion:hover {
+      background: #c0392b;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: .4rem;
+      text-align: center;
+    }
+
+    th {
+      background: #f5f5f5;
+    }
+
+    .acciones a {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 15px;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+
+    .acciones a:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Administrador - Dashboard</h1>
+    <button class="cerrar-sesion" onclick="cerrarSesion()">Cerrar sesión</button>
+  </header>
+
+  <nav>
+    <a href="/admin/admin-dashboard.html">Dashboard</a>
+    <a href="/admin/admin-usuarios.html">Usuarios</a>
+    <a href="/admin/admin-reportes.html">Reportes</a>
+  </nav>
+
+  <main>
+    <h2>Estadísticas Generales</h2>
+    <div id="estadisticas">Cargando...</div>
+
+    <h2>Acciones Rápidas</h2>
+    <div class="acciones">
+      <a href="/admin/admin-productos.html">Supervisar Productos</a>
+      <a href="/admin/admin-pedidos.html">Monitorear Pedidos</a>
+      <a href="/admin/admin-reportes.html">Ver Reportes</a>
+    </div>
+  </main>
+
+  <script>
+    function cerrarSesion() {
+      if (confirm('¿Deseas cerrar sesión?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('carrito');
+        localStorage.removeItem('carrito_tiendaId');
+        localStorage.removeItem('ultimo_pedido_id');
+        window.location.href = '/login.html'; // Ajusta si tienes otra ruta de login
+      }
+    }
+
+    async function cargarEstadisticas() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Debes iniciar sesión como administrador');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/api/admin/estadisticas', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Error al obtener estadísticas');
+
+        const data = await res.json();
+
+        document.getElementById('estadisticas').innerHTML = `
+          <table>
+            <tr><th>Total Usuarios</th><td>${data.totalUsuarios}</td></tr>
+            <tr><th>Total Negocios</th><td>${data.totalNegocios}</td></tr>
+            <tr><th>Total Repartidores</th><td>${data.totalRepartidores}</td></tr>
+            <tr><th>Total Pedidos</th><td>${data.totalPedidos}</td></tr>
+          </table>
+        `;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('estadisticas').innerText = 'Error al cargar estadísticas';
+      }
+    }
+
+    cargarEstadisticas();
+  </script>
+</body>
+</html>

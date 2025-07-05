@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Vehículo</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <h2>Registrar Vehículo</h2>
+  <form id="vehiculoForm">
+    <label>Tipo de Vehículo:</label>
+    <select name="tipo" required>
+      <option value="moto">Moto</option>
+      <option value="bicicleta">Bicicleta</option>
+      <option value="auto">Auto</option>
+    </select>
+    <br />
+    <label>Placa:</label>
+    <input type="text" name="placa" required />
+    <br />
+    <button type="submit">Registrar Vehículo</button>
+  </form>
+
+  <h3>Mis Vehículos Registrados</h3>
+  <div id="listaVehiculos">Cargando...</div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    async function cargarVehiculos() {
+      const lista = document.getElementById("listaVehiculos");
+
+      try {
+        const res = await fetch("http://localhost:5000/api/vehiculos", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        console.log("Respuesta de /api/vehiculos:", data);
+
+        if (!Array.isArray(data)) {
+          lista.innerHTML = data.msg || "Error al cargar vehículos";
+          return;
+        }
+
+        if (data.length === 0) {
+          lista.innerHTML = "No tienes vehículos registrados.";
+          return;
+        }
+
+        lista.innerHTML = `
+          <table border="1" cellpadding="5">
+            <tr>
+              <th>ID</th>
+              <th>Tipo</th>
+              <th>Placa</th>
+            </tr>
+            ${data.map(v => `
+              <tr>
+                <td>${v.id}</td>
+                <td>${v.tipo}</td>
+                <td>${v.placa}</td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+
+      } catch (err) {
+        console.error('Error cargando vehículos:', err);
+        lista.innerHTML = "Error al cargar vehículos";
+      }
+    }
+
+    document.getElementById("vehiculoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const tipo = e.target.tipo.value;
+      const placa = e.target.placa.value;
+
+      try {
+        const res = await fetch("http://localhost:5000/api/vehiculos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ tipo, placa })
+        });
+
+        const data = await res.json();
+        alert(data.msg || "Vehículo registrado");
+
+        cargarVehiculos(); // Recarga lista tras registrar
+
+      } catch (err) {
+        console.error('Error registrando vehículo:', err);
+        alert('Error al registrar vehículo');
+      }
+    });
+
+    cargarVehiculos(); // Carga inicial al abrir la página
+  </script>
+</body>
+</html>

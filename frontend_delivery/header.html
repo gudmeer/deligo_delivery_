@@ -1,0 +1,70 @@
+<header class="navbar">
+  <nav id="site-top-nav" class="navbar-menu navbar-fixed-top">
+    <div class="container">
+      <!-- logo -->
+      <div class="logo">
+        <a href="index.html" title="Logo">
+          <img src="img/logo.jpg" alt="Logo" class="img-responsive" />
+        </a>
+      </div>
+      <!-- Main Menu -->
+      <div class="menu text-right">
+        <ul>
+          <li><a class="hvr-underline-from-center" href="index.html">Inicio</a></li>
+          <li><a class="hvr-underline-from-center" href="categories.html">Tiendas</a></li>
+          <li><a class="hvr-underline-from-center" href="order.html">Mis Pedidos</a></li>
+          <li><a class="hvr-underline-from-center" href="login.html">Login</a></li>
+          <li>
+            <a id="shopping-cart" class="shopping-cart">
+              <i class="fa fa-cart-arrow-down"></i>
+              <span class="badge" id="cart-badge">0</span>
+            </a>
+            <div id="cart-content" class="cart-content" style="display:none;">
+              <h3 class="text-center">Carrito</h3>
+              <table class="cart-table" border="0" id="cart-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Nombre</th> 
+                    <th>Precio</th>
+                    <th>Cant.</th>
+                    <th>Total</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="cart-items">
+                  <!-- Productos del carrito -->
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="4">Total</th>
+                    <th id="cart-total">S/ 0.00</th>
+                    <th></th>
+                  </tr>
+                </tfoot>
+              </table>
+              <a href="order.html" class="btn-primary" id="confirm-order-btn">Confirmar Pedido</a>
+            </div>
+          </li>
+
+          <!-- 🔴 Botón cerrar sesión -->
+          <li>
+            <button onclick="cerrarSesion()" class="btn-primary" style="background-color: #c62828; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+              Cerrar Sesión
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  function cerrarSesion() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('ultimo_pedido_id');
+    localStorage.removeItem('carrito');
+    localStorage.removeItem('carrito_tiendaId');
+    window.location.href = 'login.html'; // Redirige al login al cerrar sesión
+  }
+</script>

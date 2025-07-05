@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Pedidos</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ccc; padding: .4rem; text-align: center; }
+    th { background: #f5f5f5; }
+    select { margin-bottom: 10px; }
+    button.accion { margin: 0 2px; padding: 2px 8px; cursor: pointer; }
+    button.borrar { color: #fff; background: #d9534f; border: none; }
+    button.anular { color: #fff; background: #f0ad4e; border: none; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Administración de Pedidos</h1>
+  </header>
+
+  <main>
+    <label for="filtroEstado">Filtrar por estado:</label>
+    <select id="filtroEstado" onchange="cargarPedidos()">
+      <option value="">Todos</option>
+      <option value="pendiente">Pendiente</option>
+      <option value="en-camino">En camino</option>
+      <option value="entregado">Entregado</option>
+      <option value="anulado">Anulado</option>
+    </select>
+
+    <div id="pedidos">Cargando pedidos...</div>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    async function cargarPedidos() {
+      const estado = document.getElementById('filtroEstado').value;
+      const div = document.getElementById('pedidos');
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/admin/pedidos${estado ? '?estado=' + estado : ''}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const pedidos = await res.json();
+
+        if (!Array.isArray(pedidos) || pedidos.length === 0) {
+          div.innerHTML = '<p>No hay pedidos registrados.</p>';
+          return;
+        }
+
+        div.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Negocio</th>
+                <th>Cliente</th>
+                <th>Repartidor</th>
+                <th>Vehículo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pedidos.map(p => `
+                <tr>
+                  <td>${p.id}</td>
+                  <td>${p.tienda?.nombre || '-'}</td>
+                  <td>${p.nombre_cliente || p.cliente?.nombre || '-'}</td>
+                  <td>${p.repartidor?.nombre || '-'}</td>
+                  <td>${p.repartidor?.vehiculo ? p.repartidor.vehiculo.tipo + ' - ' + p.repartidor.vehiculo.placa : '-'}</td>
+                  <td>${p.estado?.nombre || '-'}</td>
+                  <td>
+                    <button class="accion borrar" onclick="borrarPedido(${p.id})">Borrar</button>
+                    <button class="accion anular" onclick="anularPedido(${p.id})"
+                      ${p.estado?.nombre === 'anulado' || p.estado?.nombre === 'entregado' ? 'disabled' : ''}>
+                      Anular
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        console.error(err);
+        div.innerHTML = '<p>Error al cargar pedidos</p>';
+      }
+    }
+
+    async function borrarPedido(id) {
+      if (!confirm('¿Seguro que deseas borrar este pedido? Esta acción es irreversible.')) return;
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/admin/pedidos/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('Pedido borrado correctamente.');
+          cargarPedidos();
+        } else {
+          alert(data.mensaje || 'No se pudo borrar el pedido.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error al borrar el pedido.');
+      }
+    }
+
+    async function anularPedido(id) {
+      if (!confirm('¿Seguro que deseas anular este pedido?')) return;
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/admin/pedidos/${id}/anular`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('Pedido anulado correctamente.');
+          cargarPedidos();
+        } else {
+          alert(data.mensaje || 'No se pudo anular el pedido.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error al anular el pedido.');
+      }
+    }
+
+    cargarPedidos();
+  </script>
+</body>
+</html>

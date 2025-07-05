@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Reportes</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    main { padding: 20px; }
+    canvas { max-width: 600px; margin: 30px auto; display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Reportes del Sistema</h1>
+  </header>
+
+  <main>
+    <h2>Ventas totales por negocio</h2>
+    <canvas id="ventasNegocio"></canvas>
+
+    <h2>Entregas totales por repartidor</h2>
+    <canvas id="entregasRepartidor"></canvas>
+
+    <h2>Productos más vendidos</h2>
+    <canvas id="productosVendidos"></canvas>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    async function cargarReportes() {
+      try {
+        const res = await fetch('http://localhost:5000/api/admin/reportes', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        renderChart('ventasNegocio', data.ventasNegocio.labels, data.ventasNegocio.values, 'Ventas S/.');
+        renderChart('entregasRepartidor', data.entregasRepartidor.labels, data.entregasRepartidor.values, 'Entregas');
+        renderChart('productosVendidos', data.productosVendidos.labels, data.productosVendidos.values, 'Ventas');
+      } catch (err) {
+        console.error(err);
+        alert('Error al cargar reportes');
+      }
+    }
+
+    function renderChart(id, labels, data, label) {
+      const ctx = document.getElementById(id).getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label,
+            data,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    cargarReportes();
+  </script>
+</body>
+</html>

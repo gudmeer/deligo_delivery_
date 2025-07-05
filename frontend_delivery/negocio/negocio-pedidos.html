@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pedidos del Negocio</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: .4rem; text-align: center; }
+    th { background:#f5f5f5; }
+    button[disabled] { opacity:.5; cursor:not-allowed; }
+    .msg { margin: 1rem 0; text-align: center; color:#d32f2f; }
+    .nuevo { background-color: #e0ffe0; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <header><h1>Pedidos Recibidos</h1></header>
+
+  <nav>
+    <a href="negocio-panel.html">Inicio</a>
+    <a href="negocio-productos.html">Productos</a>
+    <a href="negocio-pedidos.html">Pedidos</a>
+  </nav>
+
+  <main>
+    <div id="mensaje" class="msg"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+          <th>Dirección</th>
+          <th>Estado</th>
+          <th>Productos</th>
+          <th>Acción</th>
+          <th>Creado</th>
+          <th>Actualizado</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-pedidos-negocio"></tbody>
+    </table>
+  </main>
+
+  <script>
+  const tablaPedidos = document.getElementById('tabla-pedidos-negocio');
+
+  async function cargarPedidosNegocio() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      tablaPedidos.innerHTML = '<tr><td colspan="10">Debes iniciar sesión como negocio</td></tr>';
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:5000/api/pedidos/negocio', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Error al cargar pedidos');
+      const pedidos = await res.json();
+
+      if (!Array.isArray(pedidos) || pedidos.length === 0) {
+        tablaPedidos.innerHTML = '<tr><td colspan="10">No hay pedidos</td></tr>';
+        return;
+      }
+
+      tablaPedidos.innerHTML = pedidos.map(p => {
+        const productos = p.detallePedidos?.map(d => d.producto?.nombre).join(', ') || '-';
+
+        // Si el estado es "pendiente" (id = 1), mostrar botón Aceptar
+        const botonAceptar = p.estado?.id === 1
+          ? `<button onclick="aceptarPedido(${p.id})">Aceptar</button>`
+          : '';
+
+        return `
+          <tr>
+            <td>${p.id}</td>
+            <td>${p.cliente?.nombre ?? p.nombre_cliente}</td>
+            <td>${p.telefono_cliente ?? '-'}</td>
+            <td>${p.correo_cliente ?? '-'}</td>
+            <td>${p.direccion_entrega ?? '-'}</td>
+            <td>${p.estado?.nombre ?? '-'}</td>
+            <td>${productos}</td>
+            <td>${botonAceptar}</td>
+            <td>${new Date(p.createdAt).toLocaleString()}</td>
+            <td>${new Date(p.updatedAt).toLocaleString()}</td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (err) {
+      console.error(err);
+      tablaPedidos.innerHTML = '<tr><td colspan="10">Error al cargar pedidos</td></tr>';
+    }
+  }
+
+  async function aceptarPedido(pedidoId) {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/aceptar`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const result = await res.json();
+      alert(result.mensaje || 'Pedido aceptado');
+      cargarPedidosNegocio();
+
+    } catch (err) {
+      console.error(err);
+      alert('Error al aceptar pedido');
+    }
+  }
+
+  cargarPedidosNegocio();
+  setInterval(cargarPedidosNegocio, 30000);
+</script>
+
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:5000');
+
+    socket.on('pedido_actualizado', (pedido) => {
+      console.log('Pedido actualizado', pedido);
+      cargarPedidosNegocio(); // recarga pedidos en tiempo real
+    });
+  </script>
+</body>
+</html>

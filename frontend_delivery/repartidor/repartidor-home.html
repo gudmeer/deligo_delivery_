@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Repartidor</title>
+  <link rel="stylesheet" href="../css/panel.css">
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:5000');
+    socket.on('connect', () => {
+      console.log('Conectado a Socket.io');
+    });
+    socket.on('pedido_actualizado', () => {
+      cargarPedidosRepartidor(); // Refresca tabla si cambia un pedido
+    });
+  </script>
+</head>
+
+<body class="repartidor">
+  <header>
+    <h1>Panel Repartidor</h1>
+    <button class="cerrar-sesion" onclick="cerrarSesion()">Cerrar sesión</button>
+  </header>
+
+  <nav>
+    <a href="repartidor-home.html">Inicio</a>
+  </nav>
+
+  <main>
+    <!-- Bienvenida -->
+    <section class="panel-card">
+      <h2>Bienvenido</h2>
+      <p>Este es tu panel como repartidor. Puedes gestionar tus pedidos y vehículos registrados.</p>
+    </section>
+
+    <!-- Pedidos Asignados -->
+    <section class="panel-card">
+      <h2>Pedidos Asignados</h2>
+      <div style="overflow-x: auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Dirección</th>
+              <th>Estado</th>
+              <th>Productos</th>
+              <th>Total (S/)</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-pedidos-repartidor"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Registro de Vehículo -->
+    <section class="panel-card">
+      <h2>Registrar Vehículo</h2>
+      <form id="vehiculoForm">
+        <label>Tipo de Vehículo:</label>
+        <select name="tipo" required>
+          <option value="moto">Moto</option>
+          <option value="bicicleta">Bicicleta</option>
+          <option value="auto">Auto</option>
+        </select>
+        <br><br>
+        <label>Placa:</label>
+        <input type="text" name="placa" required>
+        <br><br>
+        <button type="submit" class="btn">Registrar Vehículo</button>
+      </form>
+    </section>
+
+    <!-- Lista de Vehículos -->
+    <section class="panel-card">
+      <h2>Mis Vehículos Registrados</h2>
+      <div id="listaVehiculos">Cargando...</div>
+    </section>
+  </main>
+
+  <script>
+    function cerrarSesion() {
+      if (confirm('¿Deseas cerrar sesión?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('carrito');
+        localStorage.removeItem('carrito_tiendaId');
+        localStorage.removeItem('ultimo_pedido_id');
+        window.location.href = '../login.html';
+      }
+    }
+
+    // -------------------------
+    // PEDIDOS
+    // -------------------------
+    const tabla = document.getElementById('tabla-pedidos-repartidor');
+
+    async function cargarPedidosRepartidor() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        tabla.innerHTML = '<tr><td colspan="7">Debes iniciar sesión como repartidor</td></tr>';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/api/pedidos/repartidor', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Error al cargar pedidos');
+
+        const pedidos = await res.json();
+        if (!Array.isArray(pedidos) || pedidos.length === 0) {
+          tabla.innerHTML = '<tr><td colspan="7">No tienes pedidos asignados</td></tr>';
+          return;
+        }
+
+        tabla.innerHTML = pedidos.map(p => {
+          const productos = p.detallePedidos?.map(d =>
+            `${d.producto?.nombre} x${d.cantidad} (S/ ${Number(d.producto?.precio).toFixed(2)})`
+          ).join('<br>') || '-';
+
+          const total = p.detallePedidos?.reduce((sum, d) =>
+            sum + (Number(d.producto?.precio) * d.cantidad), 0
+          ) || 0;
+
+          const estado = p.estado?.nombre ?? '-';
+          const deshabilitado = estado.toLowerCase() === 'entregado' ? 'disabled' : '';
+
+          return `
+            <tr>
+              <td>${p.id}</td>
+              <td>${p.nombre_cliente ?? '-'}</td>
+              <td>${p.direccion_entrega ?? '-'}</td>
+              <td>${estado}</td>
+              <td>${productos}</td>
+              <td>S/ ${total.toFixed(2)}</td>
+              <td>
+                <button onclick="marcarEnCamino(${p.id})" ${deshabilitado}>En Camino</button>
+                <button onclick="marcarEntregado(${p.id})" ${deshabilitado}>Entregado</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error(err);
+        tabla.innerHTML = '<tr><td colspan="7">Error al cargar pedidos</td></tr>';
+      }
+    }
+
+    async function marcarEnCamino(pedidoId) {
+      await actualizarEstadoPedido(pedidoId, 'en-camino');
+    }
+
+    async function marcarEntregado(pedidoId) {
+      await actualizarEstadoPedido(pedidoId, 'entregar');
+    }
+
+    async function actualizarEstadoPedido(pedidoId, accion) {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/${accion}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const result = await res.json();
+        alert(result.mensaje || 'Estado actualizado');
+        cargarPedidosRepartidor();
+
+      } catch (err) {
+        console.error(err);
+        alert('Error al actualizar estado');
+      }
+    }
+
+    // -------------------------
+    // VEHÍCULOS
+    // -------------------------
+    const listaVehiculos = document.getElementById("listaVehiculos");
+
+    async function cargarVehiculos() {
+      const token = localStorage.getItem("token");
+
+      try {
+        const res = await fetch("http://localhost:5000/api/vehiculos", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!Array.isArray(data)) {
+          listaVehiculos.innerHTML = data.msg || "Error al cargar vehículos";
+          return;
+        }
+
+        if (data.length === 0) {
+          listaVehiculos.innerHTML = "No tienes vehículos registrados.";
+          return;
+        }
+
+        listaVehiculos.innerHTML = `
+          <table class="table">
+            <thead><tr><th>ID</th><th>Tipo</th><th>Placa</th></tr></thead>
+            <tbody>
+              ${data.map(v => `
+                <tr>
+                  <td>${v.id}</td>
+                  <td>${v.tipo}</td>
+                  <td>${v.placa}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+      } catch (err) {
+        console.error('Error cargando vehículos:', err);
+        listaVehiculos.innerHTML = "Error al cargar vehículos";
+      }
+    }
+
+    document.getElementById("vehiculoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const tipo = e.target.tipo.value;
+      const placa = e.target.placa.value;
+      const token = localStorage.getItem("token");
+
+      try {
+        const res = await fetch("http://localhost:5000/api/vehiculos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ tipo, placa })
+        });
+
+        const data = await res.json();
+        alert(data.msg || "Vehículo registrado");
+        cargarVehiculos();
+
+      } catch (err) {
+        console.error('Error registrando vehículo:', err);
+        alert('Error al registrar vehículo');
+      }
+    });
+
+    // -------------------------
+    // Inicialización
+    // -------------------------
+    cargarPedidosRepartidor();
+    cargarVehiculos();
+    setInterval(cargarPedidosRepartidor, 30000);
+  </script>
+</body>
+</html>

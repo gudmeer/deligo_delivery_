@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delivery - Inicio</title>
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
+
+  <!-- Fontawesome CSS -->
+  <link rel="stylesheet" href="css/font-awesome/css/font-awesome.css" />
+
+  <!-- Hover CSS -->
+  <link rel="stylesheet" href="css/hover-min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Estilo del logo interno con ícono -->
+  <style>
+    .store-logo {
+      width: 80px;
+      height: 80px;
+      margin: 20px auto 10px;
+      border-radius: 50%;
+      background: #7e291f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease;
+    }
+    .store-logo i {
+      font-size: 32px;
+    }
+    .float-container:hover .store-logo {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔷 HEADER dinámico -->
+  <div id="header"></div>
+
+  <!-- 🔍 Food Search Section Start -->
+  <section class="food-search text-center">
+    <div class="container">
+      <form action="food-search.html" method="get">
+        <input type="search" name="q" placeholder="Buscar tiendas o productos..." required />
+        <input type="submit" value="Buscar" class="btn-primary" />
+      </form>
+    </div>
+  </section>
+  <!-- 🔍 Food Search Section End -->
+
+  <!-- 🏪 Category Section Start -->
+  <section class="categories">
+    <div class="container">
+      <h2 class="text-center">Explora Tiendas</h2>
+      <div class="heading-border"></div>
+      <div class="grid-3" id="lista-tiendas">
+        <!-- Aquí se cargarán las tiendas dinámicamente -->
+      </div>
+    </div>
+  </section>
+  <!-- 🏪 Category Section End -->
+
+  <!-- 🔷 FOOTER dinámico -->
+  <div id="footer"></div>
+
+  <!-- JQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- JQuery UI -->
+  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+
+  <!-- Custom JS -->
+  <script src="js/custom.js"></script>
+
+  <script>
+    // 🔹 Cargar header y footer dinámicamente
+    fetch('header.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('header').innerHTML = data;
+      });
+
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('footer').innerHTML = data;
+      });
+
+    // 🔹 Cargar tiendas desde el backend
+    async function cargarTiendas() {
+      try {
+        const res = await fetch('http://localhost:5000/api/tiendas');
+        if (!res.ok) throw new Error('Error al obtener tiendas');
+
+        const tiendas = await res.json();
+        const contenedor = document.getElementById('lista-tiendas');
+
+        if (!tiendas.length) {
+          contenedor.innerHTML = '<p>No hay tiendas registradas aún.</p>';
+          return;
+        }
+
+        contenedor.innerHTML = tiendas.map(tienda => `
+          <a href="category-foods.html?tiendaId=${tienda.id}">
+            <div class="float-container">
+              <div class="store-logo"><i class="fa fa-shopping-cart"></i></div>
+              <h3 class="float-text text-white">${tienda.nombre}</h3>
+              <p class="float-text text-white">${tienda.direccion}</p>
+            </div>
+          </a>
+        `).join('');
+      } catch (error) {
+        console.error('Error al cargar tiendas:', error);
+        document.getElementById('lista-tiendas').innerHTML = '<p>❌ Error al cargar tiendas.</p>';
+      }
+    }
+
+    cargarTiendas();
+
+    // 🔹 Cerrar sesión
+    function cerrarSesion() {
+      if (confirm('¿Seguro que deseas cerrar sesión?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('carrito');
+        localStorage.removeItem('carrito_tiendaId');
+        localStorage.removeItem('ultimo_pedido_id');
+        window.location.href = 'login.html';
+      }
+    }
+  </script>
+</body>
+</html>

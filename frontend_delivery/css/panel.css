@@ -1,0 +1,170 @@
+/* ──────────────────────────────────────────────
+   PANEL.CSS  —  Unificado para Admin / Negocio / Repartidor
+   ────────────────────────────────────────────── */
+
+/* 1.  Variables globales (tema por defecto = Admin) */
+:root {
+  --color-primary : #792626;   /* rojo oscuro personalizado */
+  --color-accent  : #00b894;
+  --color-light   : #f4f4f4;
+  --color-dark    : #2d3436;
+  --color-white   : #ffffff;
+
+  --radius : 12px;
+  --shadow : 0 4px 10px rgba(0, 0, 0, .1);
+  --font   : 'Segoe UI', sans-serif;
+}
+
+
+/* 1‑b.  Overrides de paleta por rol */
+body.negocio {
+  --color-primary : #e17055;   /* naranja Pastel */
+  --color-accent  : #fdcb6e;
+}
+body.repartidor {
+  --color-primary : #0984e3;   /* azul vivo */
+  --color-accent  : #00cec9;
+}
+
+/* 2.  Reset básico & tipografía */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--color-light);
+  color: var(--color-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3.  Cabecera */
+header {
+  position: relative;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 16px 24px;
+  box-shadow: var(--shadow);
+}
+header h1 { margin: 0; font-size: 1.4rem; }
+
+/* Botón “Cerrar sesión” genérico */
+.btn-logout, .cerrar-sesion {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: background .25s;
+}
+.btn-logout:hover, .cerrar-sesion:hover { background: #c0392b; }
+
+/* 4.  Navegación */
+nav {
+  background: #ececec;
+  display: flex;
+  gap: 10px;
+  padding: 10px 20px;
+  flex-wrap: wrap;
+}
+nav a {
+  color: var(--color-dark);
+  font-weight: bold;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: background .2s;
+}
+nav a:hover { background: rgba(0,0,0,.06); }
+
+/* 5.  Contenido */
+main, section.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+h2 { margin: 30px 0 15px; color: var(--color-primary); }
+
+/* 6.  Componentes reutilizables */
+.panel-card {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Botones */
+.btn, .acciones a, button {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: background .25s;
+}
+.btn:hover, .acciones a:hover, button:hover {
+  background: opacity(var(--color-primary), .85); /* CSS‑lab fallback */
+}
+.btn-secondary { background: var(--color-accent); }
+.btn-secondary:hover { background: opacity(var(--color-accent), .85); }
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: .9rem;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: .6rem .4rem;
+  text-align: center;
+}
+thead th { background: #f5f5f5; }
+
+/* Formularios */
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+label { font-weight: 600; display: block; margin-bottom: 4px; }
+
+/* Utilidades */
+.text-center { text-align: center; }
+.flex-row    { display: flex; flex-wrap: wrap; gap: 20px; }
+.card-small  { flex: 1 1 calc(33.33% - 20px); min-width: 240px; }
+
+/* Etiquetas de estado de pedido */
+.status-tag        { padding: 6px 12px; border-radius: 20px; font-size: .75rem; font-weight: bold; display: inline-block; }
+.status-pendiente  { background:#ffeaa7; color:#e17055; }
+.status-aceptado   { background:#81ecec; color:#00cec9; }
+.status-en-camino  { background:#74b9ff; color:#0984e3; }
+.status-entregado  { background:#dfe6e9; color:#2d3436; }
+
+/* Pie de página */
+footer {
+  margin-top: auto;
+  background: #ececec;
+  text-align: center;
+  padding: 12px;
+  font-size: .85rem;
+}
+
+/* 7.  Responsive */
+@media (max-width: 768px) {
+  .flex-row   { flex-direction: column; }
+  .card-small { flex: 1 1 100%; }
+  nav         { justify-content: center; }
+}

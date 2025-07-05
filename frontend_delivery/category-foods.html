@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Productos de la Tienda</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Fontawesome CSS -->
+  <link rel="stylesheet" href="css/font-awesome/css/font-awesome.css" />
+  <!-- Hover CSS -->
+  <link rel="stylesheet" href="css/hover-min.css" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- 🔷 HEADER dinámico -->
+  <div id="header"></div>
+
+  <header>
+    <h1 class="text-center" id="nombre-tienda">Productos</h1>
+  </header>
+
+  <section class="food-menu">
+    <div class="container">
+      <h2 class="text-center">Menú de la Tienda</h2>
+      <div class="heading-border"></div>
+      <div id="lista-productos" class="grid-2">
+        <!-- Productos aquí -->
+      </div>
+    </div>
+
+    <div class="container text-center" style="margin-top:30px;">
+      <button id="btn-confirmar-pedido" class="btn-primary" style="display:none;">Confirmar Pedido</button>
+    </div>
+  </section>
+
+  <!-- 🔷 FOOTER dinámico -->
+  <div id="footer"></div>
+
+  <!-- JQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <!-- Jquery UI -->
+  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+  <!-- Custom JS general -->
+  <script src="js/custom.js"></script>
+
+  <script>
+  // 🔹 Cargar header y footer
+  fetch('header.html')
+    .then(res => res.text())
+    .then(data => { document.getElementById('header').innerHTML = data; });
+
+  fetch('footer.html')
+    .then(res => res.text())
+    .then(data => { document.getElementById('footer').innerHTML = data; });
+
+  const token = localStorage.getItem('token');
+
+  function getTiendaId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tiendaId');
+  }
+
+  let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
+  async function cargarProductos() {
+    const tiendaId = getTiendaId();
+    const nombreTienda = document.getElementById('nombre-tienda');
+    const contenedor = document.getElementById('lista-productos');
+
+    if (!tiendaId) {
+      nombreTienda.textContent = 'Tienda no seleccionada';
+      contenedor.innerHTML = '<p>No se seleccionó tienda.</p>';
+      return;
+    }
+
+    try {
+  // ✅ Obtener datos de la tienda
+  const tiendaRes = await fetch(`http://localhost:5000/api/tiendas/${tiendaId}`);
+  if (!tiendaRes.ok) throw new Error('No autorizado para ver tienda');
+
+  const tienda = await tiendaRes.json();
+  nombreTienda.textContent = tienda.nombre;
+
+  // ✅ Obtener productos (ruta pública SIN token)
+  const res = await fetch(`http://localhost:5000/api/productos/tienda/${tiendaId}`);
+  if (!res.ok) throw new Error('No autorizado para ver productos');
+
+  const productos = await res.json();
+
+  if (!productos.length) {
+    contenedor.innerHTML = '<p>No hay productos en esta tienda.</p>';
+    return;
+  }
+
+      contenedor.innerHTML = productos.map(p => `
+        <div class="food-menu-box">
+          <div class="food-menu-img">
+            <img src="img/food/p1.jpg" alt="" class="img-responsive img-curve">
+          </div>
+          <div class="food-menu-desc">
+            <h4>${p.nombre}</h4>
+            <p class="food-price">S/ ${Number(p.precio).toFixed(2)}</p>
+            <p class="food-details">${p.descripcion || ''}</p>
+            <p class="food-stock">Stock: ${p.stock}</p>
+            <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}">
+            <button onclick="agregarAlCarrito(${p.id}, '${p.nombre}', ${p.precio}, ${p.stock})" class="btn-primary">Agregar</button>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      console.error(err);
+      contenedor.innerHTML = `<p>Error: ${err.message}</p>`;
+    }
+  }
+
+  function agregarAlCarrito(id, nombre, precio, stock) {
+    const qty = parseInt(document.getElementById(`qty-${id}`).value, 10);
+    if (qty < 1 || qty > stock) {
+      alert('Cantidad inválida');
+      return;
+    }
+
+    const idx = carrito.findIndex(item => item.id === id);
+    if (idx >= 0) {
+      if (carrito[idx].cantidad + qty > stock) {
+        alert('No hay suficiente stock');
+        return;
+      }
+      carrito[idx].cantidad += qty;
+    } else {
+      carrito.push({ id, nombre, precio, cantidad: qty, stock });
+    }
+
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+    localStorage.setItem('carrito_tiendaId', getTiendaId());
+
+    alert('Producto agregado al carrito');
+    document.getElementById('btn-confirmar-pedido').style.display = 'inline-block';
+  }
+
+  document.getElementById('btn-confirmar-pedido').onclick = function () {
+    if (!carrito.length) {
+      alert('El carrito está vacío');
+      return;
+    }
+    window.location.href = 'estado-pedido.html';
+  };
+
+  cargarProductos();
+  </script>
+</body>
+</html>

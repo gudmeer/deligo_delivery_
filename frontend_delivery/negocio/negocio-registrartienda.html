@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Registrar Tienda</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <h2>Registrar Tienda</h2>
+  <form id="formTienda">
+    <input type="text" name="nombre" placeholder="Nombre de la Tienda" required>
+    <input type="text" name="direccion" placeholder="Dirección" required>
+    <button type="submit">Registrar Tienda</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('formTienda');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        nombre: form.nombre.value,
+        direccion: form.direccion.value
+      };
+
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/tiendas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('Tienda registrada correctamente');
+        window.location.href = '/negocio/negocio-panel.html'; // redirige al dashboard negocio
+      } else {
+        alert(result.msg || 'Error al registrar tienda');
+      }
+    });
+  </script>
+</body>
+</html>

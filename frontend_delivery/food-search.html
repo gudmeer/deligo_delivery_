@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Búsqueda de Negocios</title>
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
+
+  <!-- Fontawesome CSS -->
+  <link rel="stylesheet" href="css/font-awesome/css/font-awesome.css" />
+
+  <!-- Hover CSS -->
+  <link rel="stylesheet" href="css/hover-min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Estilo del logo interno -->
+  <style>
+    .store-logo {
+      width: 80px;
+      height: 80px;
+      margin: 20px auto 10px;
+      border-radius: 50%;
+      background: #651919;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+      transition: transform .3s ease;
+    }
+    .float-container:hover .store-logo {
+      transform: scale(1.05);
+    }
+    .store-logo i {
+      font-size: 34px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔷 HEADER dinámico -->
+  <div id="header"></div>
+
+  <!-- Business Search Section Start -->
+  <section class="food-search text-center">
+    <div class="container">
+      <h2 style="background: #e74c3c; color: rgba(0, 0, 0, 0);">
+        Resultados de búsqueda para <span id="search-term">"Negocio"</span>
+      </h2>
+    </div>
+  </section>
+
+  <!-- Businesses Section Start -->
+  <section class="food-menu">
+    <div class="container">
+      <h2 class="text-center">Negocios encontrados</h2>
+      <div class="heading-border"></div>
+      <div id="lista-negocios" class="grid-3">
+        <!-- Aquí se insertarán los negocios encontrados -->
+      </div>
+    </div>
+  </section>
+
+  <!-- 🔷 FOOTER dinámico -->
+  <div id="footer"></div>
+
+  <!-- JQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+
+  <!-- Custom JS -->
+  <script src="js/custom.js"></script>
+
+  <script>
+    // Cargar header y footer
+    fetch('header.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('header').innerHTML = data;
+      });
+
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('footer').innerHTML = data;
+      });
+
+    // Obtener término de búsqueda
+    const params = new URLSearchParams(window.location.search);
+    let searchTerm = params.get('q');
+
+    const spanTerm = document.getElementById('search-term');
+    const contenedor = document.getElementById('lista-negocios');
+
+    if (!searchTerm || searchTerm.trim() === '') {
+      spanTerm.textContent = `"Ningún término"`;
+      contenedor.innerHTML = '<p>⚠️ Debe escribir un término de búsqueda en el buscador.</p>';
+    } else {
+      searchTerm = searchTerm.trim();
+      spanTerm.textContent = `"${searchTerm}"`;
+      buscarNegocios(searchTerm);
+    }
+
+    async function buscarNegocios(termino) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/tiendas/buscar?q=${encodeURIComponent(termino)}`);
+
+        if (!res.ok) {
+          contenedor.innerHTML = '<p>❌ Error al buscar negocios.</p>';
+          return;
+        }
+
+        const negocios = await res.json();
+
+        if (!negocios || negocios.length === 0) {
+          contenedor.innerHTML = '<p>No se encontraron negocios que coincidan con tu búsqueda.</p>';
+          return;
+        }
+
+        contenedor.innerHTML = negocios.map(n => `
+          <a href="category-foods.html?tiendaId=${n.id}" class="business-card">
+            <div class="float-container">
+              <div class="store-logo"><i class="fa fa-shopping-cart"></i></div>
+              <h3 class="float-text text-white">${n.nombre}</h3>
+              <p class="float-text text-white">${n.direccion}</p>
+            </div>
+          </a>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error al buscar negocios:', error);
+        contenedor.innerHTML = '<p>🚫 Error de conexión con el servidor.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
