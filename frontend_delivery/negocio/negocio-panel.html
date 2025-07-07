@@ -6,326 +6,331 @@
     <link rel="stylesheet" href="../css/panel.css">
 </head>
 <body>
-    <header>
-        <h1 class="text-center">Panel del Negocio</h1>
-        <button onclick="cerrarSesion()" style="position: absolute; top: 20px; right: 20px;">Cerrar sesión</button>
-    </header>
+<header>
+    <h1 class="text-center">Panel del Negocio</h1>
+    <button onclick="cerrarSesion()" style="position: absolute; top: 20px; right: 20px;">Cerrar sesión</button>
+</header>
 
-    <section class="container">
-        <h2>Tu Tienda</h2>
-        <div id="info-tienda"></div>
-        <div id="formulario-tienda" style="display:none; margin-top: 10px;">
-            <input type="text" id="nombre-tienda" placeholder="Nombre de tu tienda" />
-            <input type="text" id="direccion" placeholder="Dirección" />
-            <input type="text" id="telefono" placeholder="Teléfono" />
-            <button onclick="registrarTienda()">Registrar Tienda</button>
-        </div>
-    </section>
+<section class="container">
+    <h2>Tu Tienda</h2>
+    <div id="info-tienda"></div>
+    <div id="formulario-tienda" style="display:none; margin-top: 10px;">
+        <input type="text" id="nombre-tienda" placeholder="Nombre de tu tienda" />
+        <input type="text" id="direccion" placeholder="Dirección" />
+        <input type="text" id="telefono" placeholder="Teléfono" />
+        <button onclick="registrarTienda()">Registrar Tienda</button>
+    </div>
+</section>
 
-    <section class="container">
-        <h2>Gestión de Productos</h2>
-        <button onclick="mostrarFormulario()">Agregar nuevo producto</button>
-        <div id="formulario-producto" style="display:none; margin-top: 10px;">
-            <input type="text" id="nombre" placeholder="Nombre del producto" required />
-            <input type="text" id="descripcion" placeholder="Descripción" />
-            <input type="number" id="precio" placeholder="Precio" required />
-            <input type="number" id="stock" placeholder="Stock" required min="0" />
-            <button onclick="registrarProducto()">Guardar</button>
-        </div>
-        <div id="lista-productos">
-            <!-- Lista de productos del negocio -->
-        </div>
-    </section>
+<section class="container">
+    <h2>Gestión de Productos</h2>
+    <button onclick="mostrarFormulario()">Agregar nuevo producto</button>
+    <div id="formulario-producto" style="display:none; margin-top: 10px;">
+        <input type="text" id="nombre" placeholder="Nombre del producto" required />
+        <input type="text" id="descripcion" placeholder="Descripción" />
+        <input type="number" id="precio" placeholder="Precio" required min="0" />
+        <input type="number" id="stock" placeholder="Stock" required min="0" />
+        <button onclick="registrarProducto()">Guardar</button>
+    </div>
+    <div id="lista-productos"></div>
+</section>
 
-    <section class="container">
-        <h2>Pedidos Recibidos</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente ID</th>
-                    <th>Repartidor ID</th>
-                    <th>Tienda ID</th>
-                    <th>Estado</th>
-                    <th>Nombre Cliente</th>
-                    <th>Teléfono</th>
-                    <th>Correo</th>
-                    <th>Dirección</th>
-                    <th>Creado</th>
-                    <th>Actualizado</th>
-                    <th>Productos</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-pedidos-negocio">
-                <!-- Pedidos del backend -->
-            </tbody>
-        </table>
-    </section>
+<section class="container">
+    <h2>Pedidos Recibidos</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente ID</th>
+            <th>Repartidor ID</th>
+            <th>Tienda ID</th>
+            <th>Estado</th>
+            <th>Nombre Cliente</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Dirección</th>
+            <th>Creado</th>
+            <th>Actualizado</th>
+            <th>Productos</th>
+            <th>Acción</th>
+        </tr>
+        </thead>
+        <tbody id="tabla-pedidos-negocio"></tbody>
+    </table>
+</section>
 
-    <footer class="text-center">
-        <p>DeliGo S.A.C. &copy; 2025 - Panel Negocio</p>
-    </footer>
+<footer class="text-center">
+    <p>DeliGo S.A.C. &copy; 2025 - Panel Negocio</p>
+</footer>
 
-    <script>
-    const token = localStorage.getItem('token');
+<script>
+const API = window.location.origin;
+const token = localStorage.getItem('token');
 
-    async function verificarTienda() {
-        try {
-            const res = await fetch(`${API}/api/tiendas/mis-tiendas`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+if (!token) {
+    alert("Sesión expirada o no válida");
+    location.href = '../login.html';
+}
 
-            if (res.ok) {
-                const tienda = await res.json();
-                document.getElementById('info-tienda').innerHTML = `
-                    <p><strong>${tienda.nombre}</strong> - ${tienda.direccion}</p>
-                `;
-            } else {
-                document.getElementById('formulario-tienda').style.display = 'block';
-            }
-        } catch (err) {
-            console.error('Error verificando tienda:', err);
+async function verificarTienda() {
+    try {
+        const res = await fetch(`${API}/api/tiendas/mis-tiendas`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            const tienda = await res.json();
+            document.getElementById('info-tienda').innerHTML = `<p><strong>${tienda.nombre}</strong> - ${tienda.direccion}</p>`;
+        } else {
+            document.getElementById('formulario-tienda').style.display = 'block';
         }
+    } catch (err) {
+        console.error('Error verificando tienda:', err);
+    }
+}
+
+async function registrarTienda() {
+    const nombre = document.getElementById('nombre-tienda').value.trim();
+    const direccion = document.getElementById('direccion').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+
+    if (!nombre || !direccion || !telefono) {
+        alert('Completa todos los campos para registrar tu tienda');
+        return;
     }
 
-    async function registrarTienda() {
-        const nombre = document.getElementById('nombre-tienda').value;
-        const direccion = document.getElementById('direccion').value;
-        const telefono = document.getElementById('telefono').value;
+    try {
+        const res = await fetch(`${API}/api/tiendas`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ nombre, direccion, telefono })
+        });
 
-        const data = { nombre, direccion, telefono };
-
-        try {
-            const res = await fetch(`${API}/api/tiendas`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await res.json();
-            if (res.ok) {
-                alert('Tienda registrada');
-                location.reload();
-            } else {
-                alert(result.mensaje || 'Error al registrar tienda');
-            }
-        } catch (err) {
-            console.error('Error al registrar tienda:', err);
-            alert('Error al conectar con el servidor');
+        const result = await res.json();
+        if (res.ok) {
+            alert('Tienda registrada');
+            location.reload();
+        } else {
+            alert(result.mensaje || 'Error al registrar tienda');
         }
+    } catch (err) {
+        console.error('Error al registrar tienda:', err);
+        alert('Error al conectar con el servidor');
     }
+}
 
-    async function cargarProductos() {
-        try {
-            const res = await fetch(`${API}/api/productos`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const productos = await res.json();
-            const contenedor = document.getElementById('lista-productos');
-            contenedor.innerHTML = `
-                <table style="width:100%;margin-top:10px;">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Precio</th>
-                            <th>Stock</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${productos.map(p =>
-                            `<tr>
-                                <td>${p.nombre}</td>
-                                <td>${p.descripcion || '-'}</td>
-                                <td>S/ ${Number(p.precio).toFixed(2)}</td>
-                                <td>${p.stock !== undefined ? p.stock : '-'}</td>
-                                <td>
-                                    <button onclick="eliminarProducto(${p.id})" style="color:red;">Eliminar</button>
-                                    <button onclick="actualizarStockPrompt(${p.id}, ${p.stock})">Actualizar Stock</button>
-                                </td>
-                            </tr>`
-                        ).join('')}
-                    </tbody>
-                </table>
-            `;
-        } catch (err) {
-            console.error('Error cargando productos:', err);
-        }
-    }
+async function cargarProductos() {
+    try {
+        const res = await fetch(`${API}/api/productos`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const productos = await res.json();
+        const contenedor = document.getElementById('lista-productos');
 
-    async function registrarProducto() {
-        const nombre = document.getElementById('nombre').value;
-        const descripcion = document.getElementById('descripcion').value;
-        const precio = parseFloat(document.getElementById('precio').value);
-        const stock = parseInt(document.getElementById('stock').value, 10);
+        if (!Array.isArray(productos)) throw new Error("Respuesta inválida");
 
-        const data = { nombre, descripcion, precio, stock };
-
-        try {
-            const res = await fetch(`${API}/api/productos`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await res.json();
-            if (res.ok) {
-                alert('Producto agregado');
-                document.getElementById('formulario-producto').style.display = 'none';
-                cargarProductos();
-            } else {
-                alert(result.mensaje || 'Error al registrar producto');
-            }
-        } catch (err) {
-            alert('Error al conectar con el servidor');
-        }
-    }
-
-    // NUEVO: Eliminar producto
-    async function eliminarProducto(productoId) {
-        if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
-        try {
-            const res = await fetch(`http://localhost:5000/api/productos/${productoId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const result = await res.json();
-            if (res.ok) {
-                alert('Producto eliminado');
-                cargarProductos();
-            } else {
-                alert(result.mensaje || 'Error al eliminar producto');
-            }
-        } catch (err) {
-            alert('Error al conectar con el servidor');
-        }
-    }
-
-    // NUEVO: Prompt para actualizar stock
-    function actualizarStockPrompt(productoId, stockActual) {
-        const nuevoStock = prompt('Ingrese el nuevo stock:', stockActual);
-        if (nuevoStock === null) return; // Cancelado
-        const stockNum = parseInt(nuevoStock, 10);
-        if (isNaN(stockNum) || stockNum < 0) {
-            alert('Stock inválido');
-            return;
-        }
-        actualizarStock(productoId, stockNum);
-    }
-
-    // NUEVO: Actualizar stock
-    async function actualizarStock(productoId, nuevoStock) {
-        try {
-            const res = await fetch(`${API}/api/productos/${productoId}/stock`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ stock: nuevoStock })
-            });
-            const result = await res.json();
-            if (res.ok) {
-                alert('Stock actualizado');
-                cargarProductos();
-            } else {
-                alert(result.mensaje || 'Error al actualizar stock');
-            }
-        } catch (err) {
-            alert('Error al conectar con el servidor');
-        }
-    }
-
-    async function cargarPedidos() {
-        try {
-            const res = await fetch(`${API}/api/pedidos/negocio`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const pedidos = await res.json();
-            const tbody = document.getElementById('tabla-pedidos-negocio');
-
-            tbody.innerHTML = pedidos.map(p => {
-                const estadoNombre = p.estado?.nombre || 'Desconocido';
-                const productos = p.detallePedidos?.map(dp =>
-                    `${dp.producto?.nombre} x${dp.cantidad}`
-                ).join(', ') || '-';
-
-                // Mostrar botón Aceptar solo si estado.id === 1
-                const botonAccion = p.estado?.id === 1
-                    ? `<button onclick="aceptarPedido(${p.id})">Aceptar</button>`
-                    : `<button onclick="verPedido(${p.id})">Ver</button>`;
-
-                return `
+        contenedor.innerHTML = `
+            <table style="width:100%;margin-top:10px;">
+                <thead>
                     <tr>
-                        <td>${p.id}</td>
-                        <td>${p.cliente_id ?? '-'}</td>
-                        <td>${p.repartidor_id ?? '-'}</td>
-                        <td>${p.tienda_id ?? '-'}</td>
-                        <td>${estadoNombre}</td>
-                        <td>${p.nombre_cliente ?? '-'}</td>
-                        <td>${p.telefono_cliente ?? '-'}</td>
-                        <td>${p.correo_cliente ?? '-'}</td>
-                        <td>${p.direccion_entrega ?? '-'}</td>
-                        <td>${new Date(p.createdAt).toLocaleString()}</td>
-                        <td>${new Date(p.updatedAt).toLocaleString()}</td>
-                        <td>${productos}</td>
-                        <td>${botonAccion}</td>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
                     </tr>
-                `;
-            }).join('');
-        } catch (err) {
-            console.error('Error cargando pedidos:', err);
+                </thead>
+                <tbody>
+                    ${productos.map(p => `
+                        <tr>
+                            <td>${p.nombre}</td>
+                            <td>${p.descripcion || '-'}</td>
+                            <td>S/ ${Number(p.precio).toFixed(2)}</td>
+                            <td>${p.stock ?? '-'}</td>
+                            <td>
+                                <button onclick="eliminarProducto(${p.id})" style="color:red;">Eliminar</button>
+                                <button onclick="actualizarStockPrompt(${p.id}, ${p.stock})">Actualizar Stock</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (err) {
+        console.error('Error cargando productos:', err);
+    }
+}
+
+async function registrarProducto() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const descripcion = document.getElementById('descripcion').value.trim();
+    const precio = parseFloat(document.getElementById('precio').value);
+    const stock = parseInt(document.getElementById('stock').value);
+
+    if (!nombre || isNaN(precio) || isNaN(stock)) {
+        alert('Completa todos los campos correctamente');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/api/productos`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ nombre, descripcion, precio, stock })
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+            alert('Producto agregado');
+            document.getElementById('formulario-producto').style.display = 'none';
+            cargarProductos();
+        } else {
+            alert(result.mensaje || 'Error al registrar producto');
         }
+    } catch (err) {
+        console.error('Error al registrar producto:', err);
+        alert('Error al conectar con el servidor');
     }
+}
 
-    function verPedido(id) {
-        alert(`Ver pedido ${id} (aquí podrías abrir un modal o redirigir a otra página)`);
-    }
+async function eliminarProducto(productoId) {
+    if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
 
-    function mostrarFormulario() {
-        const form = document.getElementById('formulario-producto');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
+    try {
+        const res = await fetch(`${API}/api/productos/${productoId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
-    async function aceptarPedido(pedidoId) {
-        try {
-            const res = await fetch(`${API}/api/pedidos/${id}/aceptar`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            const result = await res.json();
-            alert(result.mensaje || 'Pedido aceptado');
-            cargarPedidos(); // recarga la lista
-
-        } catch (err) {
-            console.error('Error al aceptar pedido:', err);
-            alert('Error al aceptar pedido');
+        const result = await res.json();
+        if (res.ok) {
+            alert('Producto eliminado');
+            cargarProductos();
+        } else {
+            alert(result.mensaje || 'Error al eliminar producto');
         }
+    } catch (err) {
+        console.error(err);
+        alert('Error al conectar con el servidor');
     }
+}
 
-    // Inicializar
-    verificarTienda();
-    cargarProductos();
-    cargarPedidos();
+function actualizarStockPrompt(productoId, stockActual) {
+    const nuevoStock = prompt('Ingrese el nuevo stock:', stockActual);
+    if (nuevoStock === null) return;
+    const stockNum = parseInt(nuevoStock);
+    if (isNaN(stockNum) || stockNum < 0) {
+        alert('Stock inválido');
+        return;
+    }
+    actualizarStock(productoId, stockNum);
+}
 
-    function cerrarSesion() {
-        if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('carrito');         // opcional
-            localStorage.removeItem('carrito_tiendaId');// opcional
-            localStorage.removeItem('ultimo_pedido_id');// opcional
-            window.location.href = '../login.html';     // o la ruta de tu login
+async function actualizarStock(productoId, nuevoStock) {
+    try {
+        const res = await fetch(`${API}/api/productos/${productoId}/stock`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ stock: nuevoStock })
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+            alert('Stock actualizado');
+            cargarProductos();
+        } else {
+            alert(result.mensaje || 'Error al actualizar stock');
         }
+    } catch (err) {
+        console.error(err);
+        alert('Error al conectar con el servidor');
     }
-    </script>
+}
+
+async function cargarPedidos() {
+    try {
+        const res = await fetch(`${API}/api/pedidos/negocio`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const pedidos = await res.json();
+        const tbody = document.getElementById('tabla-pedidos-negocio');
+
+        if (!Array.isArray(pedidos)) throw new Error("Formato de pedidos inválido");
+
+        tbody.innerHTML = pedidos.map(p => {
+            const productos = p.detallePedidos?.map(dp => `${dp.producto?.nombre} x${dp.cantidad}`).join(', ') || '-';
+            const botonAccion = p.estado?.id === 1
+                ? `<button onclick="aceptarPedido(${p.id})">Aceptar</button>`
+                : `<button onclick="verPedido(${p.id})">Ver</button>`;
+
+            return `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.cliente_id ?? '-'}</td>
+                    <td>${p.repartidor_id ?? '-'}</td>
+                    <td>${p.tienda_id ?? '-'}</td>
+                    <td>${p.estado?.nombre ?? '-'}</td>
+                    <td>${p.nombre_cliente ?? '-'}</td>
+                    <td>${p.telefono_cliente ?? '-'}</td>
+                    <td>${p.correo_cliente ?? '-'}</td>
+                    <td>${p.direccion_entrega ?? '-'}</td>
+                    <td>${new Date(p.createdAt).toLocaleString()}</td>
+                    <td>${new Date(p.updatedAt).toLocaleString()}</td>
+                    <td>${productos}</td>
+                    <td>${botonAccion}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('Error cargando pedidos:', err);
+    }
+}
+
+function mostrarFormulario() {
+    const form = document.getElementById('formulario-producto');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function verPedido(id) {
+    alert(`Ver pedido #${id}`);
+}
+
+async function aceptarPedido(id) {
+    try {
+        const res = await fetch(`${API}/api/pedidos/${id}/aceptar`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const result = await res.json();
+        alert(result.mensaje || 'Pedido aceptado');
+        cargarPedidos();
+    } catch (err) {
+        console.error(err);
+        alert('Error al aceptar pedido');
+    }
+}
+
+function cerrarSesion() {
+    if (confirm('¿Cerrar sesión?')) {
+        localStorage.clear();
+        window.location.href = '../login.html';
+    }
+}
+
+// Inicializar
+verificarTienda();
+cargarProductos();
+cargarPedidos();
+</script>
 </body>
 </html>
