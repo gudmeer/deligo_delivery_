@@ -9,6 +9,8 @@ const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
 console.log('DB_PASS cargado:', process.env.DB_PASS);
+console.log("🌍 Variables de entorno:", process.env);
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
