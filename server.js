@@ -1,12 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { connectDB, sequelize } = require('./config/db');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
-const { connectDB, sequelize } = require('./config/db');
+const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
+console.log('DB_PASS cargado:', process.env.DB_PASS);
+console.log("🌍 Variables de entorno:", process.env);
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,22 +22,17 @@ const io = socketIo(server, {
   }
 });
 
-// 🌍 Log básico de entorno en desarrollo
-if (process.env.NODE_ENV !== 'production') {
-  console.log('DB_PASS cargado:', process.env.DB_PASS);
-}
-
-// 🧩 Middlewares
+// 🔧 Middlewares globales
 app.use(cors());
 app.use(express.json());
 
-// Middleware para que rutas puedan emitir eventos con Socket.IO
+// 🔧 Middleware para pasar io en req (para emitir eventos desde rutas)
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-// 📦 Rutas API
+// ✅ Rutas API
 app.use('/api/tiendas', require('./routes/tiendaRoutes'));
 app.use('/api/productos', require('./routes/productoRoutes'));
 app.use('/api/pedidos', require('./routes/pedidoRoutes'));
@@ -41,31 +40,29 @@ app.use('/api/usuarios', require('./routes/userRoutes'));
 app.use('/api/facturas', require('./routes/facturaRoutes'));
 app.use('/api/vehiculos', require('./routes/vehiculoRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+
+// ✅ Rutas del administrador
 app.use('/api/admin/usuarios', require('./routes/adminUsuarios.routes'));
+// Si crearás más rutas admin (reportes, dashboard), agrégalas aquí con prefijo /api/admin/...
 
-// 🌐 Servir frontend estático
+// ✅ Servir frontend estático
 app.use(express.static(path.join(__dirname, 'frontend_delivery')));
-
-// 🧭 Fallback para rutas del frontend (SPA o páginas sueltas)
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend_delivery', 'login.html'));
 });
 
-// ❌ 404 - Ruta no encontrada para API (sólo si no es archivo estático)
+// 🚨 Manejo de rutas no encontradas (404)
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    return res.status(404).json({ mensaje: 'Ruta de API no encontrada' });
-  }
-  next();
+  res.status(404).json({ mensaje: 'Ruta no encontrada' });
 });
 
-// 💥 Manejo general de errores
+// 🚨 Manejo de errores generales
 app.use((err, req, res, next) => {
-  console.error('Error interno:', err.stack);
+  console.error(err.stack);
   res.status(500).json({ mensaje: 'Error interno del servidor', error: err.message });
 });
 
-// 🔌 Socket.IO conexión
+// ✅ Socket.io conexión
 io.on('connection', (socket) => {
   console.log('Cliente conectado');
 
@@ -74,14 +71,14 @@ io.on('connection', (socket) => {
   });
 });
 
-// 🚀 Iniciar servidor y conectar BD
+// 🔥 Iniciar servidor y sincronizar base de datos
 sequelize.sync({ alter: true })
   .then(() => {
-    server.listen(PORT, () => {
+    server.listen(PORT, () => { // Usa server.listen para Socket.io
       console.log(`Servidor corriendo en puerto ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error('❌ Error al conectar con la base de datos:', err);
+    console.error('Error al conectar con la base de datos:', err);
     process.exit(1);
   });
