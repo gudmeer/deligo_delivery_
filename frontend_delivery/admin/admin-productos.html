@@ -21,11 +21,12 @@
   </main>
 
   <script>
+    const BASE_URL = 'https://deligo-delivery-4qa2.onrender.com'; // ✅ Producción
     const token = localStorage.getItem('token');
 
     async function cargarProductos() {
       try {
-        const res = await fetch('http://localhost:5000/api/admin/productos', {
+        const res = await fetch(`${BASE_URL}/api/admin/productos`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -80,7 +81,7 @@
       if (!confirm('¿Estás seguro de ocultar este producto?')) return;
 
       try {
-        const res = await fetch(`http://localhost:5000/api/admin/productos/${productoId}/ocultar`, {
+        const res = await fetch(`${BASE_URL}/api/admin/productos/${productoId}/ocultar`, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${token}` }
         });

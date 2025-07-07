@@ -27,13 +27,15 @@
   </main>
 
   <script>
+    const BASE_URL = 'https://deligo-delivery-4qa2.onrender.com'; // ✅ URL de producción
     const token = localStorage.getItem('token');
 
     async function cargarReportes() {
       try {
-        const res = await fetch('http://localhost:5000/api/admin/reportes', {
+        const res = await fetch(`${BASE_URL}/api/admin/reportes`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+
         const data = await res.json();
 
         renderChart('ventasNegocio', data.ventasNegocio.labels, data.ventasNegocio.values, 'Ventas S/.');

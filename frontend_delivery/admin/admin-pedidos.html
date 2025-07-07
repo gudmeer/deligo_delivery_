@@ -34,6 +34,7 @@
   </main>
 
   <script>
+    const BASE_URL = 'https://deligo-delivery-4qa2.onrender.com'; // ✅ Producción
     const token = localStorage.getItem('token');
 
     async function cargarPedidos() {
@@ -41,7 +42,7 @@
       const div = document.getElementById('pedidos');
 
       try {
-        const res = await fetch(`http://localhost:5000/api/admin/pedidos${estado ? '?estado=' + estado : ''}`, {
+        const res = await fetch(`${BASE_URL}/api/admin/pedidos${estado ? '?estado=' + estado : ''}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -96,7 +97,7 @@
       if (!confirm('¿Seguro que deseas borrar este pedido? Esta acción es irreversible.')) return;
 
       try {
-        const res = await fetch(`http://localhost:5000/api/admin/pedidos/${id}`, {
+        const res = await fetch(`${BASE_URL}/api/admin/pedidos/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -118,7 +119,7 @@
       if (!confirm('¿Seguro que deseas anular este pedido?')) return;
 
       try {
-        const res = await fetch(`http://localhost:5000/api/admin/pedidos/${id}/anular`, {
+        const res = await fetch(`${BASE_URL}/api/admin/pedidos/${id}/anular`, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${token}` }
         });

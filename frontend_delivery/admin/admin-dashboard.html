@@ -97,13 +97,15 @@
   </main>
 
   <script>
+    const BASE_URL = 'https://deligo-delivery-4qa2.onrender.com'; // ✅ Ruta de backend en producción
+
     function cerrarSesion() {
       if (confirm('¿Deseas cerrar sesión?')) {
         localStorage.removeItem('token');
         localStorage.removeItem('carrito');
         localStorage.removeItem('carrito_tiendaId');
         localStorage.removeItem('ultimo_pedido_id');
-        window.location.href = '/login.html'; // Ajusta si tienes otra ruta de login
+        window.location.href = '/login.html';
       }
     }
 
@@ -116,7 +118,7 @@
       }
 
       try {
-        const res = await fetch('http://localhost:5000/api/admin/estadisticas', {
+        const res = await fetch(`${BASE_URL}/api/admin/estadisticas`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
