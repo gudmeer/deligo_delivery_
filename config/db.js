@@ -1,15 +1,17 @@
 // config/db.js
-const { Sequelize } = require('sequelize'); // ✅ esta línea importa Sequelize correctamente
+const { Sequelize } = require('sequelize');
+const dotenv = require('dotenv');
+dotenv.config();
+
 const sequelize = new Sequelize(
-  
   process.env.DB_NAME,
   process.env.DB_USER,
-  process.env.DB_PASSWORD || process.env.DB_PASS // <-- aquí el cambio
+  process.env.DB_PASSWORD || process.env.DB_PASS, // ✅ Aquí se evalúa correctamente
   {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 3306,
     dialect: 'mysql',
-    logging: false
+    logging: false,
   }
 );
 
