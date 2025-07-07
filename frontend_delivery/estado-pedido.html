@@ -8,52 +8,90 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    :root{
-      --primary:#6c5ce7;
-      --danger:#e74c3c;
-      --radius:12px;
-      --shadow:0 4px 12px rgba(0,0,0,.08);
+    :root {
+      --primary: #6c5ce7;
+      --danger: #e74c3c;
+      --radius: 12px;
+      --shadow: 0 4px 12px rgba(0,0,0,.08);
     }
-    body{font-family:'Segoe UI',sans-serif;background:#f5f6fa;margin:0;color:#333}
-    main.container{max-width:1100px;margin:40px auto;padding:0 20px;display:flex;flex-direction:column;gap:40px}
-
-    /* ---------- Tabla carrito ---------- */
-    .table{width:100%;border-collapse:collapse;font-size:15px}
-    .table thead{background:#f0f2f6}
-    .table th,.table td{padding:12px;text-align:center;border-bottom:1px solid #e5e7eb}
-    .table tbody tr:nth-child(even){background:#fafbfc}
-
-    /* ---------- Botón eliminar ---------- */
-    .btn-delete{
-      background:var(--danger);color:#fff;border:none;padding:6px 10px;
-      border-radius:6px;cursor:pointer;font-size:.8rem
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      color: #333;
     }
-    .btn-delete:hover{background:#c0392b}
-
-    /* ---------- Formulario ---------- */
-    #form-pedido{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-    #form-pedido input{padding:10px 12px;border:1px solid #ccc;border-radius:8px;font-size:.95rem}
-    #form-pedido button{
-      padding:12px;background:var(--primary);color:#fff;border:none;border-radius:8px;
-      font-size:1rem;cursor:pointer;transition:background .3s
+    main.container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
     }
-    #form-pedido button:hover{background:#5846d2}
-
-    /* ---------- Estado ---------- */
-    .estado-mensaje{
-      font-size:1.2rem;font-weight:600;padding:16px 20px;border-radius:var(--radius);
-      display:inline-flex;align-items:center;gap:12px;box-shadow:var(--shadow);margin-bottom:20px
+    .table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .table thead { background: #f0f2f6; }
+    .table th, .table td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
     }
-    .estado-mensaje i{font-size:1.4rem}
-    .pendiente {background:#fff9db;color:#a67c00}
-    .aceptado  {background:#d8f5db;color:#2e7d32}
-    .en-camino {background:#d7efff;color:#01579b}
-    .entregado {background:#f0e3ff;color:#6a1b9a}
-    .cancelado {background:#ffe5e5;color:#c62828}
+    .table tbody tr:nth-child(even) { background: #fafbfc; }
+    .btn-delete {
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .8rem;
+    }
+    .btn-delete:hover { background: #c0392b; }
+    #form-pedido {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    #form-pedido input {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: .95rem;
+    }
+    #form-pedido button {
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background .3s;
+    }
+    #form-pedido button:hover { background: #5846d2; }
+    .estado-mensaje {
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .estado-mensaje i { font-size: 1.4rem; }
+    .pendiente { background: #fff9db; color: #a67c00; }
+    .aceptado  { background: #d8f5db; color: #2e7d32; }
+    .en-camino { background: #d7efff; color: #01579b; }
+    .entregado { background: #f0e3ff; color: #6a1b9a; }
+    .cancelado { background: #ffe5e5; color: #c62828; }
 
     @media(max-width:600px){
-      .table th:first-child,.table td:first-child,
-      .table th:last-child,.table td:last-child{display:none}
+      .table th:first-child, .table td:first-child,
+      .table th:last-child, .table td:last-child {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -63,7 +101,6 @@
   <main class="container">
     <h1 class="text-center">Realiza tu Pedido</h1>
 
-    <!-- Carrito -->
     <table class="table" id="tabla-pedido">
       <thead>
         <tr>
@@ -76,7 +113,6 @@
       </tfoot>
     </table>
 
-    <!-- Datos de entrega -->
     <h3>Detalles de Entrega</h3>
     <form id="form-pedido">
       <input type="text"    id="nombre"    placeholder="Nombre completo" required>
@@ -86,7 +122,6 @@
       <button type="submit">Confirmar Pedido</button>
     </form>
 
-    <!-- Último pedido -->
     <div id="estado-ultimo-pedido"></div>
   </main>
 
@@ -96,115 +131,137 @@
   <script src="js/custom.js"></script>
 
   <script>
-    /* ---------- Header / Footer ---------- */
-    fetch('header.html').then(r=>r.text()).then(h=>{document.getElementById('header').innerHTML=h});
-    fetch('footer.html').then(r=>r.text()).then(f=>{document.getElementById('footer').innerHTML=f});
+    const API_BASE = window.location.origin;
 
-    /* ---------- Helpers localStorage ---------- */
-    const getCarrito   = ()=>JSON.parse(localStorage.getItem('carrito'))||[];
-    const setCarrito   = c =>localStorage.setItem('carrito',JSON.stringify(c));
-    const getTiendaId  = ()=>localStorage.getItem('carrito_tiendaId');
+    fetch('header.html').then(r => r.text()).then(h => {
+      document.getElementById('header').innerHTML = h;
+    });
+    fetch('footer.html').then(r => r.text()).then(f => {
+      document.getElementById('footer').innerHTML = f;
+    });
 
-    /* ---------- Render carrito ---------- */
-    function renderCarrito(){
+    const getCarrito = () => JSON.parse(localStorage.getItem('carrito')) || [];
+    const setCarrito = c => localStorage.setItem('carrito', JSON.stringify(c));
+    const getTiendaId = () => localStorage.getItem('carrito_tiendaId');
+
+    function renderCarrito() {
       const carrito = getCarrito();
-      const tbody   = document.getElementById('pedido-items');
+      const tbody = document.getElementById('pedido-items');
       const totalEl = document.getElementById('pedido-total');
-      tbody.innerHTML=''; let total=0;
+      tbody.innerHTML = '';
+      let total = 0;
 
-      carrito.forEach((item,i)=>{
-        const sub = item.precio*item.cantidad;
-        total+=sub;
-        tbody.insertAdjacentHTML('beforeend',`
+      carrito.forEach((item, i) => {
+        const sub = item.precio * item.cantidad;
+        total += sub;
+        tbody.insertAdjacentHTML('beforeend', `
           <tr>
-            <td>${i+1}</td>
+            <td>${i + 1}</td>
             <td>${item.nombre}</td>
             <td>S/ ${item.precio.toFixed(2)}</td>
             <td><input type="number" min="1" max="${item.stock}" value="${item.cantidad}"
-                       onchange="actualizarCantidad(${i},this.value)"></td>
+              onchange="actualizarCantidad(${i}, this.value)"></td>
             <td>S/ ${sub.toFixed(2)}</td>
             <td><button class="btn-delete" onclick="eliminarItem(${i})">Eliminar</button></td>
           </tr>`);
       });
-      totalEl.textContent='S/ '+total.toFixed(2);
+
+      totalEl.textContent = 'S/ ' + total.toFixed(2);
     }
 
-    function actualizarCantidad(i,val){
-      const c=getCarrito(); const qty=parseInt(val);
-      if(qty<1||qty>c[i].stock) return alert('Cantidad inválida');
-      c[i].cantidad=qty; setCarrito(c); renderCarrito();
+    function actualizarCantidad(i, val) {
+      const c = getCarrito();
+      const qty = parseInt(val);
+      if (qty < 1 || qty > c[i].stock) return alert('Cantidad inválida');
+      c[i].cantidad = qty;
+      setCarrito(c);
+      renderCarrito();
     }
-    function eliminarItem(i){const c=getCarrito();c.splice(i,1);setCarrito(c);renderCarrito();}
 
-    /* ---------- Enviar pedido ---------- */
-    document.getElementById('form-pedido').addEventListener('submit',async e=>{
+    function eliminarItem(i) {
+      const c = getCarrito();
+      c.splice(i, 1);
+      setCarrito(c);
+      renderCarrito();
+    }
+
+    document.getElementById('form-pedido').addEventListener('submit', async e => {
       e.preventDefault();
-      const carrito = getCarrito(); const tiendaId=getTiendaId();
-      if(!carrito.length||!tiendaId) return alert('Carrito vacío o tienda no seleccionada');
+      const carrito = getCarrito();
+      const tiendaId = getTiendaId();
+      if (!carrito.length || !tiendaId) return alert('Carrito vacío o tienda no seleccionada');
 
-      const payload={
+      const payload = {
         tiendaId,
-        productos:carrito.map(p=>({id:p.id,cantidad:p.cantidad,precio:p.precio})),
-        nombre_cliente   :document.getElementById('nombre').value,
-        telefono_cliente :document.getElementById('telefono').value,
-        correo_cliente   :document.getElementById('correo').value,
-        direccion_entrega:document.getElementById('direccion').value
+        productos: carrito.map(p => ({
+          id: p.id,
+          cantidad: p.cantidad,
+          precio: p.precio
+        })),
+        nombre_cliente: document.getElementById('nombre').value,
+        telefono_cliente: document.getElementById('telefono').value,
+        correo_cliente: document.getElementById('correo').value,
+        direccion_entrega: document.getElementById('direccion').value
       };
 
-      try{
-        const res = await fetch('http://localhost:5000/api/pedidos',{
-          method:'POST',
-          headers:{
-            'Content-Type':'application/json',
-            'Authorization':'Bearer '+(localStorage.getItem('token')||'')
+      try {
+        const res = await fetch(`${API_BASE}/api/pedidos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
           },
-          body:JSON.stringify(payload)
+          body: JSON.stringify(payload)
         });
+
         const data = await res.json();
-        if(!res.ok) throw new Error(data.mensaje||'Error al enviar pedido');
+        if (!res.ok) throw new Error(data.mensaje || 'Error al enviar pedido');
 
         alert('✅ Pedido enviado');
-        localStorage.setItem('ultimo_pedido_id',data.pedidoId);
-        localStorage.removeItem('carrito'); localStorage.removeItem('carrito_tiendaId');
-        renderCarrito(); mostrarEstadoUltimoPedido();
+        localStorage.setItem('ultimo_pedido_id', data.pedidoId);
+        localStorage.removeItem('carrito');
+        localStorage.removeItem('carrito_tiendaId');
+        renderCarrito();
+        mostrarEstadoUltimoPedido();
 
-      }catch(err){alert(err.message||'Error de red');}
+      } catch (err) {
+        alert(err.message || 'Error de red');
+      }
     });
 
-    /* ---------- Mostrar estado del último pedido ---------- */
-    async function mostrarEstadoUltimoPedido(){
+    async function mostrarEstadoUltimoPedido() {
       const id = localStorage.getItem('ultimo_pedido_id');
       const tk = localStorage.getItem('token');
-      if(!id||!tk) return;
+      if (!id || !tk) return;
 
-      try{
-        const res=await fetch(`http://localhost:5000/api/pedidos/${id}`,{
-          headers:{Authorization:'Bearer '+tk}
+      try {
+        const res = await fetch(`${API_BASE}/api/pedidos/${id}`, {
+          headers: { Authorization: 'Bearer ' + tk }
         });
-        if(!res.ok) return;
-        const p=await res.json();
-        const estado=p.estado?.nombre?.toLowerCase()||'desconocido';
+        if (!res.ok) return;
+        const p = await res.json();
+        const estado = p.estado?.nombre?.toLowerCase() || 'desconocido';
 
-        const icon={
-          pendiente :'clock',
-          aceptado  :'check-circle',
-          'en camino':'truck',
-          entregado :'box',
-          cancelado :'times-circle'
-        }[estado]||'info-circle';
+        const icon = {
+          pendiente: 'clock',
+          aceptado: 'check-circle',
+          'en camino': 'truck',
+          entregado: 'box',
+          cancelado: 'times-circle'
+        }[estado] || 'info-circle';
 
-        const filas=p.detallePedidos.map((d,i)=>`
+        const filas = p.detallePedidos.map((d, i) => `
           <tr>
-            <td>${i+1}</td>
+            <td>${i + 1}</td>
             <td>${d.producto.nombre}</td>
             <td>${d.cantidad}</td>
             <td>S/ ${d.precio_unitario.toFixed(2)}</td>
             <td>S/ ${d.subtotal.toFixed(2)}</td>
           </tr>`).join('');
 
-        const total=p.detallePedidos.reduce((s,d)=>s+d.subtotal,0).toFixed(2);
+        const total = p.detallePedidos.reduce((s, d) => s + d.subtotal, 0).toFixed(2);
 
-        document.getElementById('estado-ultimo-pedido').innerHTML=`
+        document.getElementById('estado-ultimo-pedido').innerHTML = `
           <div class="estado-mensaje ${estado}">
             <i class="fa-solid fa-${icon}"></i> Estado: ${estado.toUpperCase()}
           </div>
@@ -216,10 +273,11 @@
             <tbody>${filas}</tbody>
             <tfoot><tr><th colspan="4">Total</th><th>S/ ${total}</th></tr></tfoot>
           </table>`;
-      }catch(err){console.error(err);}
+      } catch (err) {
+        console.error(err);
+      }
     }
 
-    /* ---------- Inicio ---------- */
     renderCarrito();
     mostrarEstadoUltimoPedido();
   </script>

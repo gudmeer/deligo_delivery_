@@ -58,11 +58,16 @@
   <script src="js/custom.js"></script>
 
   <script>
-    /* ---------- Cargar header y footer ---------- */
-    fetch('header.html').then(r=>r.text()).then(html=>{document.getElementById('header').innerHTML=html});
-    fetch('footer.html').then(r=>r.text()).then(html=>{document.getElementById('footer').innerHTML=html});
+    const API_BASE = window.location.origin;
 
-    /* ---------- Mostrar pedido por ID ---------- */
+    fetch('header.html').then(r => r.text()).then(html => {
+      document.getElementById('header').innerHTML = html;
+    });
+
+    fetch('footer.html').then(r => r.text()).then(html => {
+      document.getElementById('footer').innerHTML = html;
+    });
+
     async function mostrarPedido(){
       const params   = new URLSearchParams(location.search);
       const pedidoId = params.get('pedidoId') || localStorage.getItem('ultimo_pedido_id');
@@ -74,7 +79,7 @@
       }
 
       try{
-        const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}`,{
+        const res = await fetch(`${API_BASE}/api/pedidos/${pedidoId}`,{
           headers:{Authorization:'Bearer '+token}
         });
 
@@ -85,7 +90,6 @@
         }
 
         const pedido = await res.json();
-        console.log('Pedido recibido:',pedido);
 
         if(!pedido.detallePedidos?.length){
           document.getElementById('estado-pedido').innerHTML='<p>⚠️ El pedido no tiene productos.</p>';
@@ -139,13 +143,12 @@
       }
     }
 
-    /* ---------- Historial del cliente ---------- */
     async function mostrarHistorialPedidos(){
       const token = localStorage.getItem('token');
       if(!token) return;
 
       try{
-        const res = await fetch('http://localhost:5000/api/pedidos/cliente/historial',{
+        const res = await fetch(`${API_BASE}/api/pedidos/cliente/historial`,{
           headers:{Authorization:'Bearer '+token}
         });
 
@@ -178,22 +181,22 @@
       }
     }
 
-    /* ---------- Anular pedido ---------- */
     async function anularPedido(id){
       if(!confirm('¿Seguro que deseas anular tu pedido?')) return;
       const token = localStorage.getItem('token');
       try{
-        const res = await fetch(`http://localhost:5000/api/pedidos/${id}/anular`,{
+        const res = await fetch(`${API_BASE}/api/pedidos/${id}/anular`,{
           method:'PUT',headers:{Authorization:'Bearer '+token}
         });
         const data = await res.json();
         if(!res.ok) throw new Error(data.mensaje||'Error al anular');
         alert('✅ Pedido anulado');
         mostrarPedido(); mostrarHistorialPedidos();
-      }catch(err){alert(err.message||'Error');}
+      }catch(err){
+        alert(err.message||'Error');
+      }
     }
 
-    /* ---------- Iniciar ---------- */
     mostrarPedido();
     mostrarHistorialPedidos();
   </script>

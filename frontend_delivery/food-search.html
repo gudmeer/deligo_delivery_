@@ -11,14 +11,9 @@
 
   <!-- Fontawesome CSS -->
   <link rel="stylesheet" href="css/font-awesome/css/font-awesome.css" />
-
-  <!-- Hover CSS -->
   <link rel="stylesheet" href="css/hover-min.css" />
-
-  <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css" />
 
-  <!-- Estilo del logo interno -->
   <style>
     .store-logo {
       width: 80px;
@@ -47,7 +42,7 @@
   <!-- 🔷 HEADER dinámico -->
   <div id="header"></div>
 
-  <!-- Business Search Section Start -->
+  <!-- Búsqueda -->
   <section class="food-search text-center">
     <div class="container">
       <h2 style="background: #e74c3c; color: rgba(0, 0, 0, 0);">
@@ -56,29 +51,27 @@
     </div>
   </section>
 
-  <!-- Businesses Section Start -->
+  <!-- Resultados -->
   <section class="food-menu">
     <div class="container">
       <h2 class="text-center">Negocios encontrados</h2>
       <div class="heading-border"></div>
-      <div id="lista-negocios" class="grid-3">
-        <!-- Aquí se insertarán los negocios encontrados -->
-      </div>
+      <div id="lista-negocios" class="grid-3"></div>
     </div>
   </section>
 
   <!-- 🔷 FOOTER dinámico -->
   <div id="footer"></div>
 
-  <!-- JQuery -->
+  <!-- JS -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
-
-  <!-- Custom JS -->
   <script src="js/custom.js"></script>
 
   <script>
-    // Cargar header y footer
+    const API_BASE = window.location.origin;
+
+    // Header & Footer
     fetch('header.html')
       .then(res => res.text())
       .then(data => {
@@ -91,10 +84,9 @@
         document.getElementById('footer').innerHTML = data;
       });
 
-    // Obtener término de búsqueda
+    // Obtener término
     const params = new URLSearchParams(window.location.search);
     let searchTerm = params.get('q');
-
     const spanTerm = document.getElementById('search-term');
     const contenedor = document.getElementById('lista-negocios');
 
@@ -109,8 +101,7 @@
 
     async function buscarNegocios(termino) {
       try {
-        const res = await fetch(`http://localhost:5000/api/tiendas/buscar?q=${encodeURIComponent(termino)}`);
-
+        const res = await fetch(`${API_BASE}/api/tiendas/buscar?q=${encodeURIComponent(termino)}`);
         if (!res.ok) {
           contenedor.innerHTML = '<p>❌ Error al buscar negocios.</p>';
           return;

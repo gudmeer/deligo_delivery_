@@ -70,28 +70,28 @@
 
     <!-- 🔹 Script específico de la página -->
     <script>
-        // Cargar tiendas desde el backend y generar logo interno
-        async function cargarTiendas(){
-            try{
-                const res = await fetch('http://localhost:5000/api/tiendas');
+        async function cargarTiendas() {
+            const baseURL = window.location.origin;
+
+            try {
+                const res = await fetch(`${baseURL}/api/tiendas`);
                 const tiendas = await res.json();
 
                 const contenedor = document.getElementById('lista-tiendas');
                 contenedor.innerHTML = tiendas.map(tienda => `
                     <a href="category-foods.html?tiendaId=${tienda.id}">
                         <div class="float-container">
-                            <!-- Logo interno con ícono -->
                             <div class="store-logo"><i class="fa fa-shopping-cart"></i></div>
-
                             <h3 class="float-text text-white">${tienda.nombre}</h3>
                             <p class="float-text text-white">${tienda.direccion}</p>
                         </div>
                     </a>
                 `).join('');
-            }catch(err){
+            } catch (err) {
                 console.error('Error al cargar tiendas:', err);
             }
         }
+
         cargarTiendas();
     </script>
 </body>
