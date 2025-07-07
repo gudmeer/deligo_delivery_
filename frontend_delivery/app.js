@@ -16,6 +16,11 @@ sign_up_btn?.addEventListener("click", () => container?.classList.add("sign-up-m
 sign_in_btn?.addEventListener("click", () => container?.classList.remove("sign-up-mode"));
 
 /* ------------------------------------------------------------------ */
+/* 🔧 Base URL para API (detecta si está en producción)               */
+/* ------------------------------------------------------------------ */
+const API_BASE_URL = window.location.origin;
+
+/* ------------------------------------------------------------------ */
 /* 2.  Registro                                                       */
 /* ------------------------------------------------------------------ */
 document.querySelector(".sign-up-form")?.addEventListener("submit", async (e) => {
@@ -27,7 +32,7 @@ document.querySelector(".sign-up-form")?.addEventListener("submit", async (e) =>
     return alert("Completa todos los campos.");
 
   try {
-    const res  = await fetch("http://localhost:5000/api/usuarios/registrar", {
+    const res  = await fetch(`${API_BASE_URL}/api/usuarios/registrar`, {
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({
@@ -59,7 +64,7 @@ document.querySelector(".sign-in-form")?.addEventListener("submit", async (e) =>
   if (!email || !password) return alert("Completa todos los campos.");
 
   try {
-    const res  = await fetch("http://localhost:5000/api/usuarios/login", {
+    const res  = await fetch(`${API_BASE_URL}/api/usuarios/login`, {
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({ email, password })
@@ -98,7 +103,7 @@ async function cargarPedidoActivo() {
   if (!token) return;
 
   try {
-    const res = await fetch("http://localhost:5000/api/pedidos/cliente/activo", {
+    const res = await fetch(`${API_BASE_URL}/api/pedidos/cliente/activo`, {
       headers: { Authorization: "Bearer " + token }
     });
     if (!res.ok) return; // nada pendiente
