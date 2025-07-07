@@ -1,5 +1,5 @@
 const token = localStorage.getItem('token');
-const socket = io('http://localhost:5000');
+const socket = io('https://deligo-delivery-4qa2.onrender.com'); // ✅ Ruta corregida
 
 socket.on('connect', () => {
   console.log('Conectado a Socket.io');
@@ -12,7 +12,7 @@ socket.on('pedido_actualizado', (data) => {
 
 // Funciones para cambiar estado
 async function marcarEnCamino(pedidoId) {
-  const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/en-camino`, {
+  const res = await fetch(`https://deligo-delivery-4qa2.onrender.com/api/pedidos/${pedidoId}/en-camino`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -22,7 +22,7 @@ async function marcarEnCamino(pedidoId) {
 }
 
 async function marcarEntregado(pedidoId) {
-  const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/entregar`, {
+  const res = await fetch(`https://deligo-delivery-4qa2.onrender.com/api/pedidos/${pedidoId}/entregar`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` }
   });

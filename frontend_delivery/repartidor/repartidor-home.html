@@ -6,12 +6,12 @@
   <link rel="stylesheet" href="../css/panel.css">
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
-    const socket = io('http://localhost:5000');
+    const socket = io('https://deligo-delivery-4qa2.onrender.com');
     socket.on('connect', () => {
       console.log('Conectado a Socket.io');
     });
     socket.on('pedido_actualizado', () => {
-      cargarPedidosRepartidor(); // Refresca tabla si cambia un pedido
+      cargarPedidosRepartidor();
     });
   </script>
 </head>
@@ -63,11 +63,9 @@
           <option value="moto">Moto</option>
           <option value="bicicleta">Bicicleta</option>
           <option value="auto">Auto</option>
-        </select>
-        <br><br>
+        </select><br><br>
         <label>Placa:</label>
-        <input type="text" name="placa" required>
-        <br><br>
+        <input type="text" name="placa" required><br><br>
         <button type="submit" class="btn">Registrar Vehículo</button>
       </form>
     </section>
@@ -90,6 +88,8 @@
       }
     }
 
+    const API_BASE = 'https://deligo-delivery-4qa2.onrender.com/api';
+
     // -------------------------
     // PEDIDOS
     // -------------------------
@@ -103,7 +103,7 @@
       }
 
       try {
-        const res = await fetch('http://localhost:5000/api/pedidos/repartidor', {
+        const res = await fetch(`${API_BASE}/pedidos/repartidor`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -160,7 +160,7 @@
     async function actualizarEstadoPedido(pedidoId, accion) {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/${accion}`, {
+        const res = await fetch(`${API_BASE}/pedidos/${pedidoId}/${accion}`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -184,7 +184,7 @@
       const token = localStorage.getItem("token");
 
       try {
-        const res = await fetch("http://localhost:5000/api/vehiculos", {
+        const res = await fetch(`${API_BASE}/vehiculos`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
 
@@ -228,7 +228,7 @@
       const token = localStorage.getItem("token");
 
       try {
-        const res = await fetch("http://localhost:5000/api/vehiculos", {
+        const res = await fetch(`${API_BASE}/vehiculos`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
