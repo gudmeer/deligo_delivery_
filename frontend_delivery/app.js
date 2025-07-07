@@ -1,24 +1,23 @@
 /**
  * Manejo de formularios de registro y login para el frontend de Delivery.
- * ► Añadido:
- *   1) cargarPedidoActivo()   -> mantiene pedido pendiente tras volver a iniciar sesión
- *   2) reconstruirCarrito()  -> opcional: repone carrito local a partir del pedido activo
  */
 
 /* ------------------------------------------------------------------ */
-/* 1.  UI: modo sign‑in / sign‑up                                      */
+/* 1.  UI: modo sign‑in / sign‑up                                     */
 /* ------------------------------------------------------------------ */
 const sign_in_btn = document.querySelector("#sign-in-btn");
 const sign_up_btn = document.querySelector("#sign-up-btn");
-const container   = document.querySelector(".container");
+const container = document.querySelector(".container");
 
 sign_up_btn?.addEventListener("click", () => container?.classList.add("sign-up-mode"));
 sign_in_btn?.addEventListener("click", () => container?.classList.remove("sign-up-mode"));
 
 /* ------------------------------------------------------------------ */
-/* 🔧 Base URL para API (detecta si está en producción)               */
+/* 🔧 Base URL para API (local vs producción)                         */
 /* ------------------------------------------------------------------ */
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "https://deligo-delivery-4qa2.onrender.com";
 
 /* ------------------------------------------------------------------ */
 /* 2.  Registro                                                       */
