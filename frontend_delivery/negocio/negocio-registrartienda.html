@@ -14,6 +14,8 @@
   </form>
 
   <script>
+    const API_BASE_URL = window.location.origin;
+
     const form = document.getElementById('formTienda');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -23,21 +25,28 @@
       };
 
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/tiendas', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(data)
-      });
+      if (!token) return alert('No hay sesión activa.');
 
-      const result = await res.json();
-      if (res.ok) {
-        alert('Tienda registrada correctamente');
-        window.location.href = '/negocio/negocio-panel.html'; // redirige al dashboard negocio
-      } else {
-        alert(result.msg || 'Error al registrar tienda');
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/tiendas`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          alert('Tienda registrada correctamente');
+          window.location.href = '/negocio/negocio-panel.html';
+        } else {
+          alert(result.msg || 'Error al registrar tienda');
+        }
+      } catch (err) {
+        console.error('Error de red:', err);
+        alert('Error de conexión al servidor');
       }
     });
   </script>

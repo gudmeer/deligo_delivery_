@@ -72,7 +72,7 @@
 
     async function verificarTienda() {
         try {
-            const res = await fetch('http://localhost:5000/api/tiendas/mis-tiendas', {
+            const res = await fetch(`${API}/api/tiendas/mis-tiendas`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -97,7 +97,7 @@
         const data = { nombre, direccion, telefono };
 
         try {
-            const res = await fetch('http://localhost:5000/api/tiendas', {
+            const res = await fetch(`${API}/api/tiendas`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,7 +121,7 @@
 
     async function cargarProductos() {
         try {
-            const res = await fetch('http://localhost:5000/api/productos', {
+            const res = await fetch(`${API}/api/productos`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const productos = await res.json();
@@ -167,7 +167,7 @@
         const data = { nombre, descripcion, precio, stock };
 
         try {
-            const res = await fetch('http://localhost:5000/api/productos', {
+            const res = await fetch(`${API}/api/productos`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -224,7 +224,7 @@
     // NUEVO: Actualizar stock
     async function actualizarStock(productoId, nuevoStock) {
         try {
-            const res = await fetch(`http://localhost:5000/api/productos/${productoId}/stock`, {
+            const res = await fetch(`${API}/api/productos/${productoId}/stock`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -246,7 +246,7 @@
 
     async function cargarPedidos() {
         try {
-            const res = await fetch('http://localhost:5000/api/pedidos/negocio', {
+            const res = await fetch(`${API}/api/pedidos/negocio`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const pedidos = await res.json();
@@ -297,7 +297,7 @@
 
     async function aceptarPedido(pedidoId) {
         try {
-            const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/aceptar`, {
+            const res = await fetch(`${API}/api/pedidos/${id}/aceptar`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

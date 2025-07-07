@@ -45,88 +45,85 @@
   </main>
 
   <script>
-  const tablaPedidos = document.getElementById('tabla-pedidos-negocio');
+    const API_URL = window.location.origin;
+    const tablaPedidos = document.getElementById('tabla-pedidos-negocio');
 
-  async function cargarPedidosNegocio() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      tablaPedidos.innerHTML = '<tr><td colspan="10">Debes iniciar sesión como negocio</td></tr>';
-      return;
-    }
-
-    try {
-      const res = await fetch('http://localhost:5000/api/pedidos/negocio', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error('Error al cargar pedidos');
-      const pedidos = await res.json();
-
-      if (!Array.isArray(pedidos) || pedidos.length === 0) {
-        tablaPedidos.innerHTML = '<tr><td colspan="10">No hay pedidos</td></tr>';
+    async function cargarPedidosNegocio() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        tablaPedidos.innerHTML = '<tr><td colspan="10">Debes iniciar sesión como negocio</td></tr>';
         return;
       }
 
-      tablaPedidos.innerHTML = pedidos.map(p => {
-        const productos = p.detallePedidos?.map(d => d.producto?.nombre).join(', ') || '-';
+      try {
+        const res = await fetch(`${API_URL}/api/pedidos/negocio`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-        // Si el estado es "pendiente" (id = 1), mostrar botón Aceptar
-        const botonAceptar = p.estado?.id === 1
-          ? `<button onclick="aceptarPedido(${p.id})">Aceptar</button>`
-          : '';
+        if (!res.ok) throw new Error('Error al cargar pedidos');
+        const pedidos = await res.json();
 
-        return `
-          <tr>
-            <td>${p.id}</td>
-            <td>${p.cliente?.nombre ?? p.nombre_cliente}</td>
-            <td>${p.telefono_cliente ?? '-'}</td>
-            <td>${p.correo_cliente ?? '-'}</td>
-            <td>${p.direccion_entrega ?? '-'}</td>
-            <td>${p.estado?.nombre ?? '-'}</td>
-            <td>${productos}</td>
-            <td>${botonAceptar}</td>
-            <td>${new Date(p.createdAt).toLocaleString()}</td>
-            <td>${new Date(p.updatedAt).toLocaleString()}</td>
-          </tr>
-        `;
-      }).join('');
+        if (!Array.isArray(pedidos) || pedidos.length === 0) {
+          tablaPedidos.innerHTML = '<tr><td colspan="10">No hay pedidos</td></tr>';
+          return;
+        }
 
-    } catch (err) {
-      console.error(err);
-      tablaPedidos.innerHTML = '<tr><td colspan="10">Error al cargar pedidos</td></tr>';
+        tablaPedidos.innerHTML = pedidos.map(p => {
+          const productos = p.detallePedidos?.map(d => d.producto?.nombre).join(', ') || '-';
+          const botonAceptar = p.estado?.id === 1
+            ? `<button onclick="aceptarPedido(${p.id})">Aceptar</button>`
+            : '';
+
+          return `
+            <tr class="${p.estado?.id === 1 ? 'nuevo' : ''}">
+              <td>${p.id}</td>
+              <td>${p.cliente?.nombre ?? p.nombre_cliente}</td>
+              <td>${p.telefono_cliente ?? '-'}</td>
+              <td>${p.correo_cliente ?? '-'}</td>
+              <td>${p.direccion_entrega ?? '-'}</td>
+              <td>${p.estado?.nombre ?? '-'}</td>
+              <td>${productos}</td>
+              <td>${botonAceptar}</td>
+              <td>${new Date(p.createdAt).toLocaleString()}</td>
+              <td>${new Date(p.updatedAt).toLocaleString()}</td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error(err);
+        tablaPedidos.innerHTML = '<tr><td colspan="10">Error al cargar pedidos</td></tr>';
+      }
     }
-  }
 
-  async function aceptarPedido(pedidoId) {
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/aceptar`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+    async function aceptarPedido(pedidoId) {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${API_URL}/api/pedidos/${pedidoId}/aceptar`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-      const result = await res.json();
-      alert(result.mensaje || 'Pedido aceptado');
-      cargarPedidosNegocio();
+        const result = await res.json();
+        alert(result.mensaje || 'Pedido aceptado');
+        cargarPedidosNegocio();
 
-    } catch (err) {
-      console.error(err);
-      alert('Error al aceptar pedido');
+      } catch (err) {
+        console.error(err);
+        alert('Error al aceptar pedido');
+      }
     }
-  }
 
-  cargarPedidosNegocio();
-  setInterval(cargarPedidosNegocio, 30000);
-</script>
-
+    cargarPedidosNegocio();
+    setInterval(cargarPedidosNegocio, 30000);
+  </script>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script>
-    const socket = io('http://localhost:5000');
-
+    const socket = io(window.location.origin);
     socket.on('pedido_actualizado', (pedido) => {
-      console.log('Pedido actualizado', pedido);
-      cargarPedidosNegocio(); // recarga pedidos en tiempo real
+      console.log('Pedido actualizado:', pedido);
+      cargarPedidosNegocio();
     });
   </script>
 </body>
