@@ -219,3 +219,15 @@ module.exports = {
   }
 
 };
+
+// adminController.js - función getReportes
+const [ventasPorTienda] = await sequelize.query(`
+  SELECT
+    tienda.nombre AS nombre,
+    SUM(detallePedidos.subtotal) AS totalVentas
+  FROM pedidos AS Pedido
+  LEFT JOIN tiendas AS tienda ON Pedido.tienda_id = tienda.id
+  LEFT JOIN detalle_pedidos AS detallePedidos ON Pedido.id = detallePedidos.pedido_id
+  GROUP BY tienda.nombre;
+`);
+
