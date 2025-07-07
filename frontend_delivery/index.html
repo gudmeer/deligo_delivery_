@@ -6,19 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Delivery - Inicio</title>
 
-  <!-- Favicon -->
   <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
-
-  <!-- Fontawesome CSS -->
   <link rel="stylesheet" href="css/font-awesome/css/font-awesome.css" />
-
-  <!-- Hover CSS -->
   <link rel="stylesheet" href="css/hover-min.css" />
-
-  <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css" />
 
-  <!-- Estilo del logo interno con ícono -->
   <style>
     .store-logo {
       width: 80px;
@@ -42,12 +34,10 @@
     }
   </style>
 </head>
-<body>
 
-  <!-- 🔷 HEADER dinámico -->
+<body>
   <div id="header"></div>
 
-  <!-- 🔍 Food Search Section Start -->
   <section class="food-search text-center">
     <div class="container">
       <form action="food-search.html" method="get">
@@ -56,88 +46,86 @@
       </form>
     </div>
   </section>
-  <!-- 🔍 Food Search Section End -->
 
-  <!-- 🏪 Category Section Start -->
   <section class="categories">
     <div class="container">
       <h2 class="text-center">Explora Tiendas</h2>
       <div class="heading-border"></div>
       <div class="grid-3" id="lista-tiendas">
-        <!-- Aquí se cargarán las tiendas dinámicamente -->
+        <!-- Aquí se insertan las tiendas -->
       </div>
     </div>
   </section>
-  <!-- 🏪 Category Section End -->
 
-  <!-- 🔷 FOOTER dinámico -->
   <div id="footer"></div>
 
-  <!-- JQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js" defer></script>
+  <script src="js/custom.js" defer></script>
 
-  <!-- JQuery UI -->
-  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Base API URL dinámico según entorno
+      const API_BASE = window.location.origin.includes('localhost') 
+        ? 'http://localhost:5000' 
+        : window.location.origin;
 
-  <!-- Custom JS -->
-  <script src="js/custom.js"></script>
+      // Header dinámico
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => document.getElementById('header').innerHTML = html)
+        .catch(err => console.error('Error al cargar header:', err));
 
-  <script>
-    // 🔹 Cargar header y footer dinámicamente
-    fetch('header.html')
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById('header').innerHTML = data;
-      });
+      // Footer dinámico
+      fetch('footer.html')
+        .then(res => res.text())
+        .then(html => document.getElementById('footer').innerHTML = html)
+        .catch(err => console.error('Error al cargar footer:', err));
 
-    fetch('footer.html')
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById('footer').innerHTML = data;
-      });
+      // Cargar tiendas desde API
+      async function cargarTiendas() {
+        try {
+          const res = await fetch(`${API_BASE}/api/tiendas`);
+          if (!res.ok) throw new Error('Error al obtener tiendas');
+          const tiendas = await res.json();
 
-    // 🔹 Cargar tiendas desde el backend
-    async function cargarTiendas() {
-      try {
-        const res = await fetch('http://localhost:5000/api/tiendas');
-        if (!res.ok) throw new Error('Error al obtener tiendas');
+          const contenedor = document.getElementById('lista-tiendas');
 
-        const tiendas = await res.json();
-        const contenedor = document.getElementById('lista-tiendas');
+          if (!Array.isArray(tiendas) || tiendas.length === 0) {
+            contenedor.innerHTML = '<p>No hay tiendas registradas aún.</p>';
+            return;
+          }
 
-        if (!tiendas.length) {
-          contenedor.innerHTML = '<p>No hay tiendas registradas aún.</p>';
-          return;
+          contenedor.innerHTML = tiendas.map(t => `
+            <a href="category-foods.html?tiendaId=${t.id}">
+              <div class="float-container">
+                <div class="store-logo"><i class="fa fa-shopping-cart"></i></div>
+                <h3 class="float-text text-white">${t.nombre}</h3>
+                <p class="float-text text-white">${t.direccion}</p>
+              </div>
+            </a>
+          `).join('');
+        } catch (error) {
+          console.error('❌ Error al cargar tiendas:', error);
+          document.getElementById('lista-tiendas').innerHTML = '<p>❌ Error al cargar tiendas.</p>';
         }
-
-        contenedor.innerHTML = tiendas.map(tienda => `
-          <a href="category-foods.html?tiendaId=${tienda.id}">
-            <div class="float-container">
-              <div class="store-logo"><i class="fa fa-shopping-cart"></i></div>
-              <h3 class="float-text text-white">${tienda.nombre}</h3>
-              <p class="float-text text-white">${tienda.direccion}</p>
-            </div>
-          </a>
-        `).join('');
-      } catch (error) {
-        console.error('Error al cargar tiendas:', error);
-        document.getElementById('lista-tiendas').innerHTML = '<p>❌ Error al cargar tiendas.</p>';
       }
-    }
 
-    cargarTiendas();
+      // Función cerrar sesión
+      window.cerrarSesion = function () {
+        if (confirm('¿Seguro que deseas cerrar sesión?')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('usuario');
+          localStorage.removeItem('carrito');
+          localStorage.removeItem('carrito_tiendaId');
+          localStorage.removeItem('ultimo_pedido_id');
+          window.location.href = 'login.html';
+        }
+      };
 
-    // 🔹 Cerrar sesión
-    function cerrarSesion() {
-      if (confirm('¿Seguro que deseas cerrar sesión?')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('usuario');
-        localStorage.removeItem('carrito');
-        localStorage.removeItem('carrito_tiendaId');
-        localStorage.removeItem('ultimo_pedido_id');
-        window.location.href = 'login.html';
-      }
-    }
+      // Cargar al iniciar
+      cargarTiendas();
+    });
   </script>
 </body>
 </html>

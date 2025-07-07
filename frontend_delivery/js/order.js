@@ -26,6 +26,8 @@ function renderCarrito() {
     return;
   }
 
+  document.getElementById('form-pedido').style.display = 'block';
+
   carrito.forEach((item, index) => {
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
@@ -33,7 +35,7 @@ function renderCarrito() {
     tbody.innerHTML += `
       <tr>
         <td>${index + 1}</td>
-        <td><img src="${item.imagen || 'img/food/p1.jpg'}" alt="${item.nombre}" width="40"></td>
+        <td><img src="${item.imagen || 'img/food/default.jpg'}" alt="${item.nombre}" width="40"></td>
         <td>${item.nombre}</td>
         <td>S/ ${item.precio.toFixed(2)}</td>
         <td>
@@ -80,23 +82,28 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const nombre = document.getElementById('nombre').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+    const correo = document.getElementById('correo').value.trim();
+    const direccion = document.getElementById('direccion').value.trim();
+
+    if (!nombre || !telefono || !correo || !direccion) {
+      alert('Por favor completa todos los campos del formulario');
+      return;
+    }
+
     const productos = carrito.map(item => ({
       id: item.id,
       cantidad: item.cantidad,
       precio: item.precio
     }));
 
-    const nombre = document.getElementById('nombre').value.trim();
-    const telefono = document.getElementById('telefono').value.trim();
-    const correo = document.getElementById('correo').value.trim();
-    const direccion = document.getElementById('direccion').value.trim();
-
     try {
-      const res = await fetch('http://localhost:5000/api/pedidos', {
+      const res = await fetch(`${window.location.origin}/api/pedidos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? 'Bearer ' + token : ''
+          ...(token && { 'Authorization': `Bearer ${token}` })
         },
         body: JSON.stringify({
           tiendaId,
@@ -114,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Pedido creado correctamente');
         localStorage.removeItem('carrito');
         localStorage.removeItem('carrito_tiendaId');
-        window.location.href = 'estado-pedido.html?pedidoId=' + data.pedidoId;
+        window.location.href = `estado-pedido.html?pedidoId=${data.pedidoId}`;
       } else {
         alert('Error al crear pedido: ' + (data.mensaje || data.error));
       }

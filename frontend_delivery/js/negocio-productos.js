@@ -1,5 +1,10 @@
+const API_URL = `${window.location.origin}/api/productos`;
 const token = localStorage.getItem('token');
-const API_URL = 'http://localhost:3000/api/productos';
+
+if (!token) {
+  alert('Debes iniciar sesión');
+  window.location.href = '/login.html';
+}
 
 const headers = {
   'Content-Type': 'application/json',
@@ -8,46 +13,72 @@ const headers = {
 
 // Mostrar productos del negocio
 async function cargarProductos() {
-  const res = await fetch(`${API_URL}`, { headers });
-  const productos = await res.json();
+  try {
+    const res = await fetch(API_URL, { headers });
 
-  const tbody = document.querySelector('#tabla-productos tbody');
-  tbody.innerHTML = '';
+    if (!res.ok) throw new Error('Error al obtener productos');
 
-  productos.forEach(p => {
-    const fila = document.createElement('tr');
-    fila.innerHTML = `
-      <td>${p.nombre}</td>
-      <td>${p.precio}</td>
-      <td>${p.stock !== undefined ? p.stock : '-'}</td>
-      <td>
-        <button onclick="eliminarProducto(${p.id})">Eliminar</button>
-      </td>`;
-    tbody.appendChild(fila);
-  });
+    const productos = await res.json();
+
+    const tbody = document.querySelector('#tabla-productos tbody');
+    tbody.innerHTML = '';
+
+    if (!Array.isArray(productos) || productos.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4">No hay productos registrados</td></tr>';
+      return;
+    }
+
+    productos.forEach(p => {
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+        <td>${p.nombre}</td>
+        <td>S/ ${Number(p.precio).toFixed(2)}</td>
+        <td>${p.stock ?? '-'}</td>
+        <td>
+          <button onclick="eliminarProducto(${p.id})" style="color: red;">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(fila);
+    });
+  } catch (err) {
+    console.error('Error al cargar productos:', err);
+    alert('Error al cargar productos');
+  }
 }
 
 // Crear producto
 document.getElementById('form-producto').addEventListener('submit', async e => {
   e.preventDefault();
 
-  const nombre = document.getElementById('nombre').value;
-  const descripcion = document.getElementById('descripcion').value;
+  const nombre = document.getElementById('nombre').value.trim();
+  const descripcion = document.getElementById('descripcion').value.trim();
   const precio = parseFloat(document.getElementById('precio').value);
   const stock = parseInt(document.getElementById('stock').value, 10);
 
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ nombre, descripcion, precio, stock })
-  });
+  if (!nombre || isNaN(precio) || isNaN(stock)) {
+    alert('Completa todos los campos correctamente');
+    return;
+  }
 
-  if (res.ok) {
-    alert('Producto creado');
-    cargarProductos();
-  } else {
-    const err = await res.json();
-    alert('Error: ' + (err.mensaje || err.error || 'Error desconocido'));
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ nombre, descripcion, precio, stock })
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      alert('Producto creado exitosamente');
+      document.getElementById('form-producto').reset();
+      cargarProductos();
+    } else {
+      alert('Error: ' + (result.mensaje || result.error || 'Error desconocido'));
+    }
+  } catch (err) {
+    console.error('Error al crear producto:', err);
+    alert('Error al conectar con el servidor');
   }
 });
 
@@ -55,17 +86,25 @@ document.getElementById('form-producto').addEventListener('submit', async e => {
 async function eliminarProducto(id) {
   if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
 
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-    headers
-  });
+  try {
+    const res = await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE',
+      headers
+    });
 
-  if (res.ok) {
-    alert('Producto eliminado');
-    cargarProductos();
-  } else {
-    alert('Error al eliminar');
+    const result = await res.json();
+
+    if (res.ok) {
+      alert('Producto eliminado correctamente');
+      cargarProductos();
+    } else {
+      alert(result.mensaje || 'Error al eliminar producto');
+    }
+  } catch (err) {
+    console.error('Error al eliminar producto:', err);
+    alert('Error de conexión');
   }
 }
 
+// Inicializar
 cargarProductos();
