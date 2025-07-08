@@ -103,68 +103,72 @@ module.exports = {
   },
 
   /* 🔹 Reportes */
-  async getReportes(req, res) {
-    try {
-      // Ventas por negocio
-      const ventasNegocio = await Pedido.findAll({
-        attributes: [
-          [Sequelize.col('tienda.nombre'), 'nombre'],
-          [Sequelize.fn('SUM', Sequelize.col('detallePedidos.subtotal')), 'totalVentas']
-        ],
-        include: [
-          { model: Tienda, as: 'tienda', attributes: [] },
-          { model: DetallePedido, as: 'detallePedidos', attributes: [] }
-        ],
-        group: ['tienda.nombre']
-      });
+async getReportes(req, res) {
+  try {
+    // Ventas por negocio
+    const ventasNegocio = await Pedido.findAll({
+      attributes: [
+        [Sequelize.col('tienda.nombre'), 'nombre'],
+        [Sequelize.fn('SUM', Sequelize.col('detallePedidos.subtotal')), 'totalVentas']
+      ],
+      include: [
+        { model: Tienda, as: 'tienda', attributes: [] },
+        { model: DetallePedido, as: 'detallePedidos', attributes: [] }
+      ],
+      group: ['tienda.nombre'],
+      raw: true
+    });
 
-      // Entregas por repartidor
-      const entregasRepartidor = await Pedido.findAll({
-        attributes: [
-          [Sequelize.col('repartidor.nombre'), 'nombre'],
-          [Sequelize.fn('COUNT', Sequelize.col('Pedido.id')), 'totalEntregas']
-        ],
-        include: [
-          { model: User, as: 'repartidor', attributes: [] }
-        ],
-        where: { estado_id: ESTADOS.ENTREGADO },
-        group: ['repartidor.nombre']
-      });
+    // Entregas por repartidor
+    const entregasRepartidor = await Pedido.findAll({
+      attributes: [
+        [Sequelize.col('repartidor.nombre'), 'nombre'],
+        [Sequelize.fn('COUNT', Sequelize.col('Pedido.id')), 'totalEntregas']
+      ],
+      include: [
+        { model: User, as: 'repartidor', attributes: [] }
+      ],
+      where: { estado_id: ESTADOS.ENTREGADO },
+      group: ['repartidor.nombre'],
+      raw: true
+    });
 
-      // Productos más vendidos
-      const productosVendidos = await DetallePedido.findAll({
-        attributes: [
-          [Sequelize.col('producto.nombre'), 'nombre'],
-          [Sequelize.fn('SUM', Sequelize.col('cantidad')), 'totalVendidos']
-        ],
-        include: [
-          { model: Producto, as: 'producto', attributes: [] }
-        ],
-        group: ['producto.nombre'],
-        order: [[Sequelize.fn('SUM', Sequelize.col('cantidad')), 'DESC']],
-        limit: 10
-      });
+    // Productos más vendidos
+    const productosVendidos = await DetallePedido.findAll({
+      attributes: [
+        [Sequelize.col('producto.nombre'), 'nombre'],
+        [Sequelize.fn('SUM', Sequelize.col('cantidad')), 'totalVendidos']
+      ],
+      include: [
+        { model: Producto, as: 'producto', attributes: [] }
+      ],
+      group: ['producto.nombre'],
+      order: [[Sequelize.fn('SUM', Sequelize.col('cantidad')), 'DESC']],
+      limit: 10,
+      raw: true
+    });
 
-      res.json({
-        ventasNegocio: {
-          labels: ventasNegocio.map(v => v.get('nombre')),
-          values: ventasNegocio.map(v => parseFloat(v.get('totalVentas')))
-        },
-        entregasRepartidor: {
-          labels: entregasRepartidor.map(e => e.get('nombre')),
-          values: entregasRepartidor.map(e => parseInt(e.get('totalEntregas')))
-        },
-        productosVendidos: {
-          labels: productosVendidos.map(p => p.get('nombre')),
-          values: productosVendidos.map(p => parseInt(p.get('totalVendidos')))
-        }
-      });
+    // Respuesta
+    res.json({
+      ventasNegocio: {
+        labels: ventasNegocio.map(v => v.nombre),
+        values: ventasNegocio.map(v => parseFloat(v.totalVentas))
+      },
+      entregasRepartidor: {
+        labels: entregasRepartidor.map(e => e.nombre),
+        values: entregasRepartidor.map(e => parseInt(e.totalEntregas))
+      },
+      productosVendidos: {
+        labels: productosVendidos.map(p => p.nombre),
+        values: productosVendidos.map(p => parseInt(p.totalVendidos))
+      }
+    });
 
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ msg: 'Error al obtener reportes', error: err.message });
-    }
-  },
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Error al obtener reportes', error: err.message });
+  }
+},
 
   /* 🔹 BORRAR PEDIDO (admin) */
   async borrarPedido(req, res) {
