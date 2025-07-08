@@ -19,9 +19,4 @@ router.get('/pedidos', auth('admin'), adminController.getPedidos);
 router.delete('/pedidos/:id', auth('admin'), adminController.borrarPedido);         // ✅ correcto
 router.put('/pedidos/:id/anular', auth('admin'), adminController.anularPedidoAdmin); // ✅ correcto
 
-/**
- * 🔹 Reportes
- */
-router.get('/reportes', auth('admin'), adminController.getReportes);
-
 module.exports = router;
