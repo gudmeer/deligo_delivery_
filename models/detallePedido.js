@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'pedidos', // nombre de la tabla en BD
+        model: 'pedidos', 
         key: 'id'
       },
       onUpdate: 'CASCADE',
@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'productos', // nombre de la tabla en BD
+        model: 'productos', 
         key: 'id'
       },
       onUpdate: 'CASCADE',

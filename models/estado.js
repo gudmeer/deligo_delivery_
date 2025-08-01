@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Estado = sequelize.define('Estado', {
-    nombre: DataTypes.STRING // Ej: 'pendiente', 'en camino', 'entregado', 'facturado'
+    nombre: DataTypes.STRING 
   });
 
   Estado.associate = (models) => {

@@ -8,7 +8,7 @@ const {
   DetallePedido,
   Estado,
   Vehiculo,
-  sequelize          // 👈 asegúrate de exportarlo en models/index.js
+  sequelize          
 } = require('../models');
 
 const ESTADOS = {
@@ -50,7 +50,7 @@ module.exports = {
     }
   },
 
-  /* 🔹 Supervisión de productos */
+  /* Supervisión de productos */
   async getProductos(req, res) {
     try {
       const productos = await Producto.findAll({
@@ -64,7 +64,7 @@ module.exports = {
     }
   },
 
-  /* 🔹 Ocultar / mostrar producto */
+  /* Ocultar / mostrar producto */
   async toggleProducto(req, res) {
     try {
       const producto = await Producto.findByPk(req.params.id);
@@ -79,7 +79,7 @@ module.exports = {
     }
   },
 
-  /* 🔹 Pedidos (con filtro por estado) */
+  /* Pedidos (con filtro por estado) */
   async getPedidos(req, res) {
     try {
       const where = {};
@@ -102,7 +102,7 @@ module.exports = {
     }
   },
 
-  /* 🔹 Reportes */
+  /* Reportes */
 async getReportes(req, res) {
   try {
     // Ventas por negocio
@@ -170,7 +170,7 @@ async getReportes(req, res) {
   }
 },
 
-  /* 🔹 BORRAR PEDIDO (admin) */
+  /* BORRAR PEDIDO (admin) */
   async borrarPedido(req, res) {
     const { id } = req.params;
 
@@ -201,7 +201,7 @@ async getReportes(req, res) {
     }
   },
 
-  /* 🔹 ANULAR PEDIDO (admin) */
+  /* ANULAR PEDIDO (admin) */
   async anularPedidoAdmin(req, res) {
     try {
       const pedido = await Pedido.findByPk(req.params.id);

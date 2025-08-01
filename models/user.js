@@ -22,14 +22,14 @@ module.exports = (sequelize, DataTypes) => {
     rol: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'cliente', // ✅ Valor por defecto
+      defaultValue: 'cliente', 
       validate: {
         isIn: [['cliente', 'negocio', 'repartidor', 'admin']]
       }
     },
     activo: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true // ✅ Nuevo campo: usuarios activos por defecto
+      defaultValue: true 
     }
   }, {
     tableName: 'users',

@@ -3,16 +3,16 @@ const router = express.Router();
 const adminUsuariosController = require('../controllers/adminUsuarios.controller');
 const auth = require('../middlewares/auth.middleware');
 
-// ✅ Listar usuarios
+// Listar usuarios
 router.get('/', auth('admin'), adminUsuariosController.getUsuarios);
 
-// ✅ Cambiar rol
+// Cambiar rol
 router.put('/:id/rol', auth('admin'), adminUsuariosController.cambiarRol);
 
-// ✅ Activar / Desactivar
+// Activar / Desactivar
 router.put('/:id/estado', auth('admin'), adminUsuariosController.toggleEstado);
 
-// ✅ Eliminar usuario
+// Eliminar usuario
 router.delete('/:id', auth('admin'), adminUsuariosController.eliminarUsuario);
 
 module.exports = router;

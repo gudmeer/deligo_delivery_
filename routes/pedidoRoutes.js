@@ -9,10 +9,10 @@ const {
   User,
   sequelize
 } = require('../models');
-const { Op } = require('sequelize');   //  <‑‑  ¡IMPORTANTE!
+const { Op } = require('sequelize');   
 const authMiddleware = require('../middlewares/auth.middleware');
-const pedidoController = require('../controllers/pedidoController'); // ✅ IMPORTAR AQUÍ
-const auth = require('../middlewares/auth.middleware'); // ✅ Esta línea es la que faltaba
+const pedidoController = require('../controllers/pedidoController'); 
+const auth = require('../middlewares/auth.middleware'); 
 
 
 
@@ -40,7 +40,7 @@ router.post('/', authMiddleware('cliente'), async (req, res) => {
         throw new Error('Datos de pedido incompletos');
       }
 
-      // ✅ Crear pedido
+      // Crear pedido
       const pedido = await Pedido.create({
         tienda_id: tiendaId,
         cliente_id: clienteId,
@@ -51,7 +51,7 @@ router.post('/', authMiddleware('cliente'), async (req, res) => {
         correo_cliente
       }, { transaction: t });
 
-      // ✅ Procesar cada producto
+      // Procesar cada producto
       for (const p of productos) {
         const producto = await Producto.findOne({
           where: { id: p.id },
@@ -67,7 +67,7 @@ router.post('/', authMiddleware('cliente'), async (req, res) => {
           throw new Error(`Stock insuficiente de ${producto.nombre}`);
         }
 
-        // ✅ Crear detalle de pedido
+        // Crear detalle de pedido
         await DetallePedido.create({
           pedido_id: pedido.id,
           producto_id: p.id,
@@ -76,7 +76,7 @@ router.post('/', authMiddleware('cliente'), async (req, res) => {
           subtotal: p.precio * p.cantidad
         }, { transaction: t });
 
-        // ✅ Actualizar stock
+        // Actualizar stock
         await producto.update(
           { stock: producto.stock - p.cantidad },
           { transaction: t }
@@ -85,7 +85,7 @@ router.post('/', authMiddleware('cliente'), async (req, res) => {
 
       await t.commit();
 
-      // ✅ Retornar respuesta con pedidoId
+      // Retornar respuesta con pedidoId
       return res.status(201).json({
         mensaje: 'Pedido creado exitosamente',
         pedidoId: pedido.id
@@ -94,7 +94,7 @@ router.post('/', authMiddleware('cliente'), async (req, res) => {
     } catch (error) {
       if (!t.finished) await t.rollback();
 
-      // 🔁 Retry en caso de deadlock
+      // Retry en caso de deadlock
       if (error.original?.code === 'ER_LOCK_DEADLOCK') {
         attempt++;
         lastErr = error;
@@ -110,7 +110,7 @@ router.post('/', authMiddleware('cliente'), async (req, res) => {
     }
   }
 
-  // ❌ Si persiste deadlock
+  // Si persiste deadlock
   return res.status(500).json({
     mensaje: 'Deadlock persistente, inténtalo de nuevo.',
     error: lastErr?.message || 'Unknown'
@@ -134,12 +134,12 @@ router.post('/:id/aceptar', authMiddleware('negocio'), async (req, res) => {
     console.log('==============================');
     console.log(`Procesando aceptación de pedido ${pedido.id}`);
 
-    // 🔎 Obtener todos los repartidores
+    // Obtener todos los repartidores
     const repartidores = await User.findAll({
       where: { rol: 'repartidor' }
     });
 
-    // ✅ Log de repartidores encontrados
+    // Log de repartidores encontrados
     if (!repartidores.length) {
       console.log('⚠️ No hay repartidores registrados en la base de datos');
       return res.status(400).json({ mensaje: 'No hay repartidores registrados' });
@@ -149,7 +149,7 @@ router.post('/:id/aceptar', authMiddleware('negocio'), async (req, res) => {
 
     let repartidorDisponible = null;
 
-    // 🔁 Buscar repartidor sin pedidos en curso
+    // Buscar repartidor sin pedidos en curso
     for (const repartidor of repartidores) {
       const pedidosEnCurso = await Pedido.count({
         where: {
@@ -171,7 +171,7 @@ router.post('/:id/aceptar', authMiddleware('negocio'), async (req, res) => {
       return res.status(400).json({ mensaje: 'No hay repartidores disponibles en este momento' });
     }
 
-    // ✅ Asignar repartidor y cambiar estado a "aceptado"
+    // Asignar repartidor y cambiar estado a "aceptado"
     pedido.repartidor_id = repartidorDisponible.id;
     pedido.estado_id = 2; // 2 = aceptado
     await pedido.save();

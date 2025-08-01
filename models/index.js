@@ -19,9 +19,8 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// Importar todos los modelos con nombres consistentes
 
-db.User = require('./user')(sequelize, DataTypes);          // Corregido: './User' → './user'
+db.User = require('./user')(sequelize, DataTypes);          
 db.Tienda = require('./tienda')(sequelize, DataTypes);
 db.Producto = require('./producto')(sequelize, DataTypes);
 db.Pedido = require('./pedido')(sequelize, DataTypes);
@@ -31,7 +30,6 @@ db.Estado = require('./estado')(sequelize, DataTypes);
 db.Vehiculo = require('./Vehiculo')(sequelize, DataTypes);
 
 // Asociaciones (después de importar todos los modelos)
-// Verifica que cada modelo exporte su método associate
 if (db.User.associate) db.User.associate(db);
 if (db.Tienda.associate) db.Tienda.associate(db);
 if (db.Producto.associate) db.Producto.associate(db);

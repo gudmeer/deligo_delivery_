@@ -1,6 +1,6 @@
 const { Producto, Tienda } = require('../models');
 
-// 🔹 Crear producto
+// Crear producto
 exports.crearProducto = async (req, res) => {
   try {
     const { nombre, descripcion, precio, stock } = req.body;
@@ -25,7 +25,7 @@ exports.crearProducto = async (req, res) => {
   }
 };
 
-// 🔹 Obtener todos los productos
+// Obtener todos los productos
 exports.obtenerProductos = async (req, res) => {
   try {
     const { tiendaId } = req.query;
@@ -38,7 +38,7 @@ exports.obtenerProductos = async (req, res) => {
   }
 };
 
-// 🔹 Obtener productos por tienda
+// Obtener productos por tienda
 exports.obtenerProductosPorTienda = async (req, res) => {
   try {
     const { tiendaId } = req.params;
@@ -50,7 +50,7 @@ exports.obtenerProductosPorTienda = async (req, res) => {
   }
 };
 
-// 🔹 Editar producto
+// Editar producto
 exports.editarProducto = async (req, res) => {
   try {
     const producto = await Producto.findByPk(req.params.id);
@@ -64,7 +64,7 @@ exports.editarProducto = async (req, res) => {
   }
 };
 
-// 🔹 Eliminar producto
+// Eliminar producto
 exports.eliminarProducto = async (req, res) => {
   try {
     const producto = await Producto.findByPk(req.params.id);

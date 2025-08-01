@@ -21,10 +21,10 @@ exports.registrar = async (req, res) => {
       email,
       password: hashed,
       rol: rol || 'cliente',
-      activo: true // default activo
+      activo: true 
     });
 
-    // 🔥 Si es negocio, generar token y marcar que debe registrar su tienda
+    // Si es negocio, generar token y marcar que debe registrar su tienda
     if (user.rol === 'negocio') {
       const payload = { id: user.id, rol: user.rol };
       const token = jwt.sign(payload, process.env.JWT_SECRET || 'secreto123', { expiresIn: '2h' });

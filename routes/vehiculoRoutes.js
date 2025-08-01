@@ -8,7 +8,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 router.post('/', authMiddleware('repartidor'), async (req, res) => {
   try {
     const { tipo, placa } = req.body;
-    const repartidor_id = req.user.id; // 🛑 Importante: obtiene ID desde el token
+    const repartidor_id = req.user.id; 
 
     const vehiculo = await Vehiculo.create({
       tipo,

@@ -1,6 +1,6 @@
 const { User } = require('../models');
 
-// ✅ Listar todos los usuarios
+// Listar todos los usuarios
 exports.getUsuarios = async (req, res) => {
   try {
     const usuarios = await User.findAll();
@@ -11,7 +11,7 @@ exports.getUsuarios = async (req, res) => {
   }
 };
 
-// ✅ Cambiar rol de un usuario
+// Cambiar rol de un usuario
 exports.cambiarRol = async (req, res) => {
   try {
     const { id } = req.params;
@@ -30,7 +30,7 @@ exports.cambiarRol = async (req, res) => {
   }
 };
 
-// ✅ Activar / Desactivar usuario
+// Activar / Desactivar usuario
 exports.toggleEstado = async (req, res) => {
   try {
     const { id } = req.params;
@@ -48,7 +48,7 @@ exports.toggleEstado = async (req, res) => {
   }
 };
 
-// ✅ Eliminar usuario
+// Eliminar usuario
 exports.eliminarUsuario = async (req, res) => {
   try {
     const { id } = req.params;

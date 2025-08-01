@@ -11,7 +11,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 
 /* =========================================================
    GET /api/tiendas
-   🔹 Obtener todas las tiendas
+   Obtener todas las tiendas
    ========================================================= */
 router.get('/', async (req, res) => {
   try {
@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
 
 /* =========================================================
    POST /api/tiendas
-   🔹 Crear una nueva tienda (solo rol "negocio")
+   Crear una nueva tienda (solo rol "negocio")
    ========================================================= */
 router.post('/', authMiddleware('negocio'), async (req, res) => {
   const { nombre, direccion, telefono } = req.body;
@@ -53,7 +53,7 @@ router.post('/', authMiddleware('negocio'), async (req, res) => {
 
 /* =========================================================
    GET /api/tiendas/mis-tiendas
-   🔹 Obtener la tienda del usuario autenticado (rol "negocio")
+   Obtener la tienda del usuario autenticado (rol "negocio")
    ========================================================= */
 router.get('/mis-tiendas', authMiddleware('negocio'), async (req, res) => {
   try {
@@ -70,8 +70,7 @@ router.get('/mis-tiendas', authMiddleware('negocio'), async (req, res) => {
 
 /* =========================================================
    GET /api/tiendas/buscar?q=...
-   🔹 Buscar tiendas por nombre (y/o dirección)
-   ⚠️ IMPORTANTE: va antes de "/:id" para que no colisione
+   Buscar tiendas por nombre (y/o dirección)
    ========================================================= */
 router.get('/buscar', async (req, res) => {
   const q = (req.query.q || '').trim();
@@ -98,7 +97,7 @@ router.get('/buscar', async (req, res) => {
 
 /* =========================================================
    GET /api/tiendas/:id
-   🔹 Obtener una tienda por ID
+   Obtener una tienda por ID
    ========================================================= */
 router.get('/:id', async (req, res) => {
   try {

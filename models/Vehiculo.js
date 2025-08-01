@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     tipo: DataTypes.STRING,
     placa: DataTypes.STRING
   }, {
-    tableName: 'vehiculos', // ✅ nombre real en tu DB
+    tableName: 'vehiculos', // 
     underscored: true
   });
 

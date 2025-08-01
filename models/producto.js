@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     tiendaId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: 'tienda_id' // Consistencia con snake_case en DB
+      field: 'tienda_id' 
     }
   }, {
     tableName: 'productos',

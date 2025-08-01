@@ -1,5 +1,5 @@
 const token = localStorage.getItem('token');
-const socket = io('https://deligo-delivery-4qa2.onrender.com'); // ✅ Ruta corregida
+const socket = io('https://deligo-delivery-4qa2.onrender.com'); 
 
 socket.on('connect', () => {
   console.log('Conectado a Socket.io');

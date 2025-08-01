@@ -5,7 +5,7 @@ const authMiddleware = (rolEsperado) => {
   return (req, res, next) => {
     const authHeader = req.headers.authorization;
 
-    // 🔴 Validar si se envió el token
+    // Validar si se envió el token
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ mensaje: 'Token no proporcionado o mal formado' });
     }
@@ -16,7 +16,7 @@ const authMiddleware = (rolEsperado) => {
 
       req.user = decoded; // Guardar datos decodificados en req.user
 
-      // 🔴 Si se espera un rol específico
+      // Si se espera un rol específico
       if (rolEsperado) {
         // Permitir un string o un array de roles
         const rolesPermitidos = Array.isArray(rolEsperado) ? rolEsperado : [rolEsperado];
@@ -26,7 +26,7 @@ const authMiddleware = (rolEsperado) => {
         }
       }
 
-      next(); // ✅ Permitir acceso si no hay restricción o si el rol coincide
+      next(); // Permitir acceso si no hay restricción o si el rol coincide
 
     } catch (error) {
       console.error('Error en authMiddleware:', error);

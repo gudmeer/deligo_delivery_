@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
-const db = require('./models'); // ✅ Usa models directamente para sync
+const db = require('./models'); // Usa models directamente para sync
 dotenv.config();
 
 const app = express();
@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*", // ✅ Reemplazar con tu frontend URL en producción
+    origin: "*", // Reemplazar en el frontend URL en producción
   }
 });
 

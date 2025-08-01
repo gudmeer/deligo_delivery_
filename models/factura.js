@@ -9,8 +9,7 @@ const Factura = sequelize.define("Factura", {
     type: DataTypes.FLOAT,
   }
 }, {
-  // Esto evita que Sequelize genere `EstadoId`, `PedidoId`, etc.
-  underscored: true, // usa snake_case en lugar de camelCase
+  underscored: true, 
 });
 
   Factura.associate = (models) => {

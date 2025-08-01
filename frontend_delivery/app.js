@@ -13,7 +13,7 @@ sign_up_btn?.addEventListener("click", () => container?.classList.add("sign-up-m
 sign_in_btn?.addEventListener("click", () => container?.classList.remove("sign-up-mode"));
 
 /* ------------------------------------------------------------------ */
-/* 🔧 Base URL para API (local vs producción)                         */
+/*  Base URL para API (local vs producción)                         */
 /* ------------------------------------------------------------------ */
 const API_BASE_URL = location.hostname === "localhost"
   ? "http://localhost:5000"
@@ -110,7 +110,7 @@ async function cargarPedidoActivo() {
     const pedido = await res.json();
     if (!pedido) return;
 
-    /* ⚙️  Persistir ID para estado-pedido.html */
+    /* Persistir ID para estado-pedido.html */
     localStorage.setItem("ultimo_pedido_id", pedido.id);
 
     /* (Opcional) Reconstruir carrito para order.html */
@@ -131,7 +131,7 @@ function reconstruirCarrito(detalles) {
     nombre  : d.producto?.nombre ?? "",
     precio  : d.precio_unitario,
     cantidad: d.cantidad,
-    stock   : 999         // ajustar si manejas stock real
+    stock   : 999         
   }));
   localStorage.setItem("carrito", JSON.stringify(carrito));
 }

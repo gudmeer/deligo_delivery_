@@ -3,21 +3,20 @@ const router = express.Router();
 const { Producto, Tienda } = require('../models');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-/**
- * 🔹 Crear producto (solo negocio)
+/** Crear producto (solo negocio)
  */
 router.post('/', authMiddleware('negocio'), async (req, res) => {
   try {
     const { nombre, descripcion, precio, stock } = req.body;
     const userId = req.user.id;
 
-    // ➡️ Obtener tienda del usuario autenticado
+    // Obtener tienda del usuario autenticado
     const tienda = await Tienda.findOne({ where: { usuarioId: userId } });
     if (!tienda) {
       return res.status(404).json({ msg: 'No tienes tienda registrada' });
     }
 
-    // ➡️ Crear producto vinculado a la tienda
+    // Crear producto vinculado a la tienda
     const producto = await Producto.create({
       nombre,
       descripcion,
@@ -33,8 +32,7 @@ router.post('/', authMiddleware('negocio'), async (req, res) => {
   }
 });
 
-/**
- * 🔹 Obtener productos propios (solo negocio)
+/** Obtener productos propios (solo negocio)
  */
 router.get('/', authMiddleware('negocio'), async (req, res) => {
   try {
@@ -51,8 +49,7 @@ router.get('/', authMiddleware('negocio'), async (req, res) => {
   }
 });
 
-/**
- * 🔹 Obtener productos por tienda (público)
+/** Obtener productos por tienda (público)
  */
 router.get('/tienda/:tiendaId', async (req, res) => {
   try {
@@ -66,8 +63,7 @@ router.get('/tienda/:tiendaId', async (req, res) => {
   }
 });
 
-/**
- * 🔹 Editar producto (solo negocio, solo propios)
+/** Editar producto (solo negocio, solo propios)
  */
 router.put('/:id', authMiddleware('negocio'), async (req, res) => {
   try {
@@ -91,8 +87,7 @@ router.put('/:id', authMiddleware('negocio'), async (req, res) => {
   }
 });
 
-/**
- * 🔹 Eliminar producto (solo negocio, solo propios)
+/** Eliminar producto (solo negocio, solo propios)
  */
 router.delete('/:id', authMiddleware('negocio'), async (req, res) => {
   try {
@@ -115,11 +110,8 @@ router.delete('/:id', authMiddleware('negocio'), async (req, res) => {
     res.status(500).json({ msg: 'Error al eliminar producto', error: error.message });
   }
 });
-/**
- * 🔹 Actualizar solo el stock de un producto (solo negocio, solo propios)
+/** Actualizar solo el stock de un producto (solo negocio, solo propios)
  */
-
-
 router.put('/:id/stock', authMiddleware('negocio'), async (req, res) => {
   try {
     const tienda = await Tienda.findOne({ where: { usuarioId: req.user.id } });
